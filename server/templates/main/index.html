@@ -45,54 +45,67 @@
         </table>
     </div>
     <script>
-        let index = 1;
-        const addRow = (data) => {
+        // Get HTML elements 
+        const button = document.getElementById('add-row')
+        const table = document.getElementById('block-data-body')
+
+        // Define API URL
+        const URL = 'https://beta.0chain.net/sharder01/v1/block/get/latest_finalized'
+
+        const buildRow = ({ date, id }) => {
             const row = document.createElement('tr')
             const html = `
             <tr>
-                <th scope="row">${data}</th>
-                <td>${index}</td>
-                <td>${index}</td>
-                <td>${index}</td>
+                <th scope="row">Data</th>
+                <td>${id}</td>
+                <td>${date}</td>
             </tr>
             `
             row.innerHTML = html
-            table = document.getElementById('block-data-body')
-            table.appendChild(row)
-            index++;
+            return row
         }
 
-        fetch('http://example.com/movies.json')
-            .then(response => response.json())
-            .then(data => console.log(data));
+        const parseData = (data) => {
+            console.log('parse data')
+            const date = new Date(data.creation_date).toString()
+            console.log('createion_date', data.creation_date)
+            console.log(date)
+            const id = data.hash
+            const parseData = {
+                date,
+                id
+            }
+            return parseData
+        }
 
-        // const fetchLastBlock = async () => {
-        //     const url = 'https://beta.0chain.net/sharder01/v1/block/get/latest_finalized_magic_block'
-        //     const response = await fetch(url, {
-        //         method: 'GET', // *GET, POST, PUT, DELETE, etc.
-        //         mode: 'cors', // no-cors, *cors, same-origin
-        //         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        //         credentials: 'include', // include, *same-origin, omit
-        //         headers: {
-        //             'Content-Type': 'application/json'
-        //         },
-        //         referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        //     })
-        // }
 
-        const button = document.getElementById('add-row')
-        const url = 'https://beta.0chain.net/sharder01/v1/block/get/latest_finalized_magic_block'
-        button.addEventListener('click', fetch(url, {
-            method: 'GET', // *GET, POST, PUT, DELETE, etc.
-            mode: 'no-cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'include', // include, *same-origin, omit
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        }))
+        const handleResData = (data) => {
+            // Parse Data
+            const parsedData = parseData(data)
 
+            // Build Row
+            row = buildRow(parsedData)
+
+            // Append row
+            table.appendChild(row)
+        }
+
+        const handleButtonClick = () => {
+            return fetch(URL, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }).then(res => {
+                return res.json()
+            }).then(resData => {
+                handleResData(resData)
+            }).catch(err => {
+                console.error('There was an error in API request')
+            })
+        }
+
+        // Add fetch API call to button click
+        button.addEventListener('click', handleButtonClick)
 
     </script>
 </main>
