@@ -36,3 +36,9 @@ body {
     font-size: 3.5rem;
   }
 }
+
+.network-status-div {
+  display: flex;
+  align-items: center;
+  margin: 0px 10px;
+}
