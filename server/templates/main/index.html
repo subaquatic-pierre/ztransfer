@@ -3,12 +3,11 @@
 {% block main %}
 
 <main>
-    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        <div class="col">
+    <div class='row main-row'>
 
-        </div>
-        <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm border-primary">
+
+        <div class="col-12 col-md-4 text-center d-flex flex-column justify-content-center align-items-center">
+            <div class="card upload-card mb-4 rounded-3 shadow-sm border-primary">
                 <div class="card-header py-3 text-white bg-primary border-primary">
                     <h4 class="my-0 fw-normal">Upload File</h4>
                 </div>
@@ -18,16 +17,27 @@
                         <li>Upload file here</li>
                         <li>Maximum file size 2GB</li>
                     </ul>
-                    <button type="button" class="w-100 btn btn-lg btn-primary" id='add-row'>Upload</button>
+
+                    <button type="button" class="w-100 btn btn-lg btn-primary my-5" id='add-row'>Upload</button>
                 </div>
             </div>
         </div>
-        <div class="col">
 
+
+        <div class="col-12 col-md-8 d-flex align-items-center">
+            <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+                <h1 class="display-4 fw-normal">Z Transfer</h1>
+                <p class="fs-5 text-muted">Using the latest in block chain technology Z-Transfer allows fast file
+                    sharing for free with all the benefits of block chain security and privacy
+                </p>
+            </div>
         </div>
+
+
     </div>
 
-    <h2 class="display-6 text-center mb-4">Latest Block Chain Data</h2>
+
+    <!-- <h2 class="display-6 text-center mb-4">Latest Block Chain Data</h2>
 
     <div class="table-responsive block-data-table">
         <table class="table table-striped ">
@@ -43,8 +53,8 @@
 
             </tbody>
         </table>
-    </div>
-    <script>
+    </div> -->
+    <!-- <script>
         // Get HTML elements 
         const button = document.getElementById('add-row')
         const table = document.getElementById('block-data-body')
@@ -106,7 +116,7 @@
         // button.addEventListener('click', handleButtonClick)
         // const intervalId = setInterval(fetchData, 2000)
 
-    </script>
+    </script> -->
 </main>
 
 
