@@ -59,24 +59,27 @@
 
 <script>
     // Add more file button
-    const addMoreFiles = `
-        <li id="upload-more-button" class="hover list-group-item py-3 bg-light">
-            <div class="d-flex align-items-center">
-                <div class="upload-icon text-primary">
-                    <div>
-                        <i class="fas fa-plus-circle fa-2x"></i>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-center text-muted flex-column mx-2">
-                    <span class="d-block">Add more files</span>
-                    <div class="remaining-space">
-                        <span class="fw-light">1 file added - </span>
-                        <span class="fw-light">2.0 GB remaining</span>
-                    </div>
+    const moreButtonLi = document.createElement('li')
+    const addMoreFilesHtml = `
+        <div class="d-flex align-items-center">
+            <div class="upload-icon text-primary">
+                <div>
+                    <i class="fas fa-plus-circle fa-2x"></i>
                 </div>
             </div>
-        </li>
+            <div class="d-flex justify-content-center text-muted flex-column mx-2">
+                <span class="d-block">Add more files</span>
+                <div class="remaining-space">
+                    <span class="fw-light">1 file added - </span>
+                    <span class="fw-light">2.0 GB remaining</span>
+                </div>
+            </div>
+        </div>
     `
+
+    const handleFileInputClick = () => {
+        hiddenFileInput.click()
+    }
     // Form submit button
     const submitTransfer = document.getElementById("submit-transfer")
 
@@ -91,17 +94,9 @@
     const cardBody = document.getElementById("card-body")
 
     // Add event listeners to buttons
-    document.getElementById("upload-file-button").addEventListener('click', () => {
-        hiddenFileInput.click()
-    })
+    document.getElementById("upload-file-button").addEventListener('click', handleFileInputClick)
 
-    // document.getElementById("upload-more-button").addEventListener('click', () => {
-    //     hiddenFileInput.click()
-    // })
-
-    document.getElementById("upload-file-text").addEventListener('click', () => {
-        hiddenFileInput.click()
-    })
+    document.getElementById("upload-file-text").addEventListener('click', handleFileInputClick)
 
     const handleSelectFileHide = () => {
         if (cardBody.classList.contains("visually-hidden")) {
@@ -112,12 +107,36 @@
     }
 
     const handleAddMoreFileAppend = () => {
+        if (cardBody.classList.contains("visually-hidden")) {
+            moreButtonLi.id = "upload-more-button"
 
+            const liClassList = [
+                "hover",
+                "list-group-item",
+                "py-3", "bg-light"
+            ]
+
+            for (let i = 0; i < liClassList.length; i++) {
+                moreButtonLi.classList.add(liClassList[i])
+            }
+
+            moreButtonLi.innerHTML = addMoreFilesHtml
+
+            // Append button to list
+            uploadedFileList.appendChild(moreButtonLi)
+
+            // Add event listener to button
+            moreButtonLi.addEventListener('click', handleFileInputClick)
+        } else {
+            moreButtonLi.removeEventListener('click', handleFileInputClick)
+            moreButtonLi.remove()
+        }
     }
 
     // Update uploaded file list on input change
     submitTransfer.addEventListener('click', () => {
         handleSelectFileHide()
+        handleAddMoreFileAppend()
     })
 
 
