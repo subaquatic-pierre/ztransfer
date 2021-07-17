@@ -3,6 +3,10 @@ body {
   min-height: 100vh;
 }
 
+a:hover {
+  cursor: pointer;
+}
+
 .icon-error {
   color: red;
 }
@@ -39,8 +43,17 @@ body {
 }
 
 .upload-card {
-  height: 400px;
-  width: 350px;
+  max-height: 400px;
+  overflow-y: scroll;
+  width: 300px;
+}
+
+.upload-icon:hover {
+  cursor: pointer;
+}
+
+.upload-card::-webkit-scrollbar {
+  display: none;
 }
 
 .network-status-div {
