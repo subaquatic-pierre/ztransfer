@@ -9,42 +9,16 @@
         <div class="col-12 col-md-4 d-flex flex-column justify-content-center align-items-center">
 
             <div class="card upload-card rounded-4 shadow-lg mb-4">
-                <!-- <div class="card-header text-center py-3 ">
-                    <h4 class="my-0 fw-normal">Upload File</h4>
-                </div> -->
 
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item bg-light">An item</li>
-                    <li class="list-group-item bg-light">An item</li>
-
-                    <!-- Only show if files are already uploaded -->
-                    <li class="list-group-item py-2 bg-light">
-                        <div class="d-flex align-items-center">
-                            <div class="upload-icon text-primary">
-                                <input type="file" class="form-control" id="hidden-file-input" multiple hidden>
-                                <input type="folder" class="form-control" id="hidden-folder-input" multiple hidden>
-                                <div id="upload-file-button" class="hover">
-                                    <i class="fas fa-plus-circle fa-2x"></i>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-center text-muted flex-column mx-2">
-                                <span class="d-block fs-5">Add more files</span>
-                                <div>
-                                    <span>1 file added - </span>
-                                    <span>2.0 GB remaining</span>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-
+                <ul id="uploaded-file-list" class="list-group list-group-flush">
+                    <li class="list-group-item bg-light">An placeholder</li>
                 </ul>
 
-                <div id='card-body' class="card-body">
+                <div id="card-body" class="card-body">
                     <form action="" id="file-form">
                         <div class="d-flex py-3">
                             <div class="upload-icon text-primary">
                                 <input type="file" class="form-control" id="hidden-file-input" multiple hidden>
-                                <input type="folder" class="form-control" id="hidden-folder-input" multiple hidden>
                                 <div id="upload-file-button" class="hover">
                                     <i class="fas fa-plus-circle fa-2x"></i>
                                 </div>
@@ -52,7 +26,6 @@
                             <div class="d-flex flex-column mx-2">
                                 <h3 id="upload-file-text" class="card-title pricing-card-title hover my-0">Select File
                                 </h3>
-                                <!-- <a id="upload-folder-button" class="text-muted fs-7 my-0">or select folder</a> -->
                             </div>
                         </div>
                     </form>
@@ -85,11 +58,30 @@
 </main>
 
 <script>
-    // Get buttons
-    const uploadFileButton = document.getElementById("upload-file-button")
-    const uploadFileText = document.getElementById("upload-file-text")
-    const uploadFolderButton = document.getElementById("upload-folder-button")
+    // Add more file button
+    const addMoreFiles = `
+        <li id="upload-more-button" class="hover list-group-item py-3 bg-light">
+            <div class="d-flex align-items-center">
+                <div class="upload-icon text-primary">
+                    <div>
+                        <i class="fas fa-plus-circle fa-2x"></i>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center text-muted flex-column mx-2">
+                    <span class="d-block">Add more files</span>
+                    <div class="remaining-space">
+                        <span class="fw-light">1 file added - </span>
+                        <span class="fw-light">2.0 GB remaining</span>
+                    </div>
+                </div>
+            </div>
+        </li>
+    `
+    // Form submit button
     const submitTransfer = document.getElementById("submit-transfer")
+
+    // Uploaded file UL
+    const uploadedFileList = document.getElementById("uploaded-file-list")
 
     // Get hidden inputs
     const hiddenFolderInput = document.getElementById("hidden-folder-input")
@@ -97,20 +89,37 @@
 
     // Get card body
     const cardBody = document.getElementById("card-body")
-    const
 
-        // Add event listeners to buttons
-        uploadFileButton.addEventListener('click', () => {
-            hiddenFileInput.click()
-        })
-    uploadFileText.addEventListener('click', () => {
+    // Add event listeners to buttons
+    document.getElementById("upload-file-button").addEventListener('click', () => {
         hiddenFileInput.click()
     })
-    uploadFolderButton.addEventListener('click', () => {
-        hiddenFolderInput.click()
+
+    // document.getElementById("upload-more-button").addEventListener('click', () => {
+    //     hiddenFileInput.click()
+    // })
+
+    document.getElementById("upload-file-text").addEventListener('click', () => {
+        hiddenFileInput.click()
     })
 
-    // Listen for change event on input
+    const handleSelectFileHide = () => {
+        if (cardBody.classList.contains("visually-hidden")) {
+            cardBody.classList.remove("visually-hidden")
+        } else {
+            cardBody.classList.add("visually-hidden")
+        }
+    }
+
+    const handleAddMoreFileAppend = () => {
+
+    }
+
+    // Update uploaded file list on input change
+    submitTransfer.addEventListener('click', () => {
+        handleSelectFileHide()
+    })
+
 
 </script>
 

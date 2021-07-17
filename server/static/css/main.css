@@ -54,9 +54,13 @@ a:hover {
 }
 
 .upload-card {
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: scroll;
   width: 300px;
+}
+
+.remaining-space {
+  font-size: 0.8rem;
 }
 
 
