@@ -7,25 +7,9 @@ a:hover {
   cursor: pointer;
 }
 
-.icon-error {
-  color: red;
-}
-.icon-ok {
-  color: green;
-}
 
 .container {
   max-width: 960px;
-}
-
-.pricing-header {
-  max-width: 700px;
-}
-
-.block-data-table {
-  /* min-height: 400px; */
-  height: 400px;
-  overflow-y: scroll;
 }
 
 .bd-placeholder-img {
@@ -42,19 +26,7 @@ a:hover {
   }
 }
 
-.upload-card {
-  max-height: 400px;
-  overflow-y: scroll;
-  width: 300px;
-}
-
-.upload-icon:hover {
-  cursor: pointer;
-}
-
-.upload-card::-webkit-scrollbar {
-  display: none;
-}
+/* Toolbar Section */
 
 .network-status-div {
   display: flex;
@@ -62,9 +34,41 @@ a:hover {
   margin: 0px 10px;
 }
 
+.icon-error {
+  color: red;
+}
+.icon-ok {
+  color: green;
+}
+
+/* ------ */
+
+/* Card Section */
+
+.hover:hover {
+  cursor: pointer;
+}
+
+.upload-card::-webkit-scrollbar {
+  display: none;
+}
+
+.upload-card {
+  max-height: 400px;
+  overflow-y: scroll;
+  width: 300px;
+}
+
+
+/* ------ */
+
+/* Main Page Section */
+
 .main-row {
   display: flex;
   flex-direction: row;
   justify-content: center;
   min-height: 78vh;
 }
+
+/* ------ */
