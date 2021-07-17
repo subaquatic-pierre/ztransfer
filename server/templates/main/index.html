@@ -68,8 +68,6 @@
         const parseData = (data) => {
             console.log('parse data')
             const date = new Date(data.creation_date).toString()
-            console.log('createion_date', data.creation_date)
-            console.log(date)
             const id = data.hash
             const parseData = {
                 date,
@@ -87,10 +85,10 @@
             row = buildRow(parsedData)
 
             // Append row
-            table.appendChild(row)
+            table.insertBefore(row, table.firstChild)
         }
 
-        const handleButtonClick = () => {
+        const fetchData = () => {
             return fetch(URL, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -105,7 +103,8 @@
         }
 
         // Add fetch API call to button click
-        button.addEventListener('click', handleButtonClick)
+        // button.addEventListener('click', handleButtonClick)
+        const intervalId = setInterval(fetchData, 2000)
 
     </script>
 </main>
