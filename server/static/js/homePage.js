@@ -53,15 +53,15 @@ const handleAddFileLiToList = () => {
     li.className =
       "file-list-item list-group-item d-flex justify-content-between align-items-start bg-light";
     const liHtml = `
-                <div class="ms-2 me-auto">
-                    <div style="max-width:200px; line-height:1.1;" class="my-0 text-wrap">${
-                      file.name
-                    }</div>
-                    <div class="file-info text-muted fw-light my-0">${convertSize(
-                      file.size
-                    )} - ${file.type}</div>
-                </div>
-            `;
+      <div class="ms-2 me-auto">
+        <div style="max-width:200px; line-height:1.1;" class="my-0 text-wrap">${
+          file.name
+        }</div>
+        <div class="file-info text-muted fw-light my-0">${convertSize(
+          file.size
+        )} - ${file.type}</div>
+      </div>
+    `;
     li.innerHTML = liHtml;
 
     // Create Delete button
@@ -98,21 +98,21 @@ const handleUploadButtonVisibilityToggle = () => {
 // Append add more button to UL
 const handleMoreButtonLiAppend = () => {
   const moreButtonLiHtml = `
-                <div class="d-flex align-items-center">
-                    <div class="upload-icon text-primary">
-                        <div>
-                            <i class="fas fa-plus-circle fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-center text-muted flex-column mx-2">
-                        <span class="d-block">Add more files</span>
-                        <div class="remaining-space">
-                            <span class="fw-light">1 file added - </span>
-                            <span class="fw-light">2.0 GB remaining</span>
-                        </div>
-                    </div>
-                </div>
-            `;
+    <div class="d-flex align-items-center">
+      <div class="upload-icon text-primary">
+        <div>
+          <i class="fas fa-plus-circle fa-2x"></i>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center text-muted flex-column mx-2">
+        <span class="d-block">Add more files</span>
+        <div class="remaining-space">
+          <span class="fw-light">1 file added - </span>
+          <span class="fw-light">2.0 GB remaining</span>
+        </div>
+      </div>
+    </div>
+  `;
 
   // If files in list append Li
   if (fileList.length > 0) {
@@ -192,14 +192,14 @@ const updatePercentage = (percentage) => {
 
   // Set card body empty html
   const cardProgressHtml = `
-            <div class="progress-container text-center">
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                    role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: ${percentage}%"></div>
-                </div>    
-                <p class="py-5">Progress: ${percentage} %</p>
-            </div>
-        `;
+    <div class="progress-container text-center">
+      <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+        role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: ${percentage}%"></div>
+      </div>    
+      <p class="py-5">Progress: ${percentage} %</p>
+    </div>
+  `;
   cardBody.innerHTML = cardProgressHtml;
 };
 
@@ -248,6 +248,7 @@ const handleSubmitData = (e) => {
     formIsValid = checkInputValid(input, formIsValid);
   });
 
+  // If form is not valid return
   if (!formIsValid) {
     return;
   }
