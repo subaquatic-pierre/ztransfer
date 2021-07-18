@@ -216,37 +216,52 @@ request.addEventListener("load", (e) => {
   }
 });
 
-const handleSubmitData = () => {
+const checkInputValid = (input, formIsValid) => {
+  if (input.value === "") {
+    input.classList.add("is-invalid");
+    formIsValid = false;
+  } else {
+    input.classList.remove("is-invalid");
+  }
+  return formIsValid;
+};
+
+const handleSubmitData = (e) => {
+  let formIsValid = true;
   const uri = "/upload-files";
   const data = new FormData();
-  const fromEmail = document.getElementById("from-email-input").value;
-  const toEmail = document.getElementById("to-email-input").value;
-  const message = document.getElementById("message-input").value;
+  const fromEmail = document.getElementById("from-email-input");
+  const toEmail = document.getElementById("to-email-input");
+  const message = document.getElementById("message-input");
 
-  if (fromEmail === "") {
-    console.log("From Email needs to be present");
-    return;
-  }
-
-  if (toEmail === "") {
-    console.log("To Email needs to be present");
-    return;
-  }
-
+  // Check at least one file uploaded
   if (fileList.length === 0) {
-    console.log("There needs to be files present to upload");
+    hiddenFileInput.classList.add("is-invalid");
+    formIsValid = false;
+  } else {
+    hiddenFileInput.classList.remove("is-invalid");
+  }
+
+  // Check inputs are valid
+  const inputs = [fromEmail, toEmail];
+  inputs.forEach((input) => {
+    formIsValid = checkInputValid(input, formIsValid);
+  });
+
+  if (!formIsValid) {
     return;
   }
 
+  // Open request if all forms are valid
   request.open("POST", uri, true);
 
+  // Build form data
   for (const file of fileList) {
     data.append("files[]", file, file.name);
   }
-
-  data.append("to_email", toEmail);
-  data.append("from_email", fromEmail);
-  data.append("message", message);
+  data.append("to_email", toEmail.value);
+  data.append("from_email", fromEmail.value);
+  data.append("message", message.value);
 
   // Empty file list
   fileList = [];
