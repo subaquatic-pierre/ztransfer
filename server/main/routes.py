@@ -15,6 +15,12 @@ def home():
 @main.route("/upload-files", methods=["POST"])
 def upload_files():
     if request.method == "POST":
+        to_email = request.form.get("to_email")
+        from_email = request.form.get("from_email")
+        message = request.form.get("message")
+
+        print(f"From Email: {from_email} \n To Email: {to_email} \n Message: {message}")
+
         files = request.files.getlist("files[]")
 
         for file in files:

@@ -214,12 +214,19 @@ let fileList = []
     const handleSubmitData = () => {
         const uri = '/upload-files'
         const data = new FormData()
+        const fromEmail = document.getElementById('from-email-input').value
+        const toEmail = document.getElementById('to-email-input').value
+        const message = document.getElementById('message-input').value
 
         request.open("POST", uri, true)
 
         for (const file of fileList) {
             data.append("files[]", file, file.name)
         }
+        
+        data.append("to_email", toEmail)
+        data.append("from_email", fromEmail)
+        data.append("message", message)
 
         // Empty file list
         fileList = []
