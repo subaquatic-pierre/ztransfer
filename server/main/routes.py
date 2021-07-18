@@ -16,8 +16,9 @@ def home():
 def upload_files():
     if request.method == "POST":
         files = request.files.getlist("files[]")
-        for file in files:
-            print(file)
-            file.save(os.path.join(current_app.root_path, "uploads", file.filename))
 
-    return redirect(url_for("main.home"))
+        for file in files:
+            file_path = os.path.join(current_app.root_path, "uploads", file.filename)
+            file.save(file_path)
+
+    return jsonify(data={"Cool": "Data"})
