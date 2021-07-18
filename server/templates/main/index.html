@@ -206,8 +206,10 @@
     const handleSubmitData = () => {
         const data = new FormData()
         for (const file of fileList) {
-            data.append('files[]', file, file.name)
+            data.append("files[]", file, file.name)
         }
+
+        data.append("test", new Blob(), "test.file")
 
         return fetch('/upload-files', {
             method: 'POST',
