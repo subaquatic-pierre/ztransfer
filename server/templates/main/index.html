@@ -184,14 +184,6 @@
         }
     }
 
-    // Update uploaded file list on input change
-    submitTransfer.addEventListener('click', () => {
-        handleSelectFileHide()
-        handleMoreButtonLiAppend()
-        console.log(this.files)
-    })
-
-
     // File upload input change handler
     const handleFileUploadFile = (e) => {
         // Add file to list
@@ -210,6 +202,22 @@
     }
 
     hiddenFileInput.addEventListener('change', handleFileUploadFile, false)
+
+    const handleSubmitData = () => {
+        const data = new FormData()
+        for (const file of fileList) {
+            data.append('files[]', file, file.name)
+        }
+
+        return fetch('/upload-files', {
+            method: 'POST',
+            body: data
+        })
+    }
+
+    // Update uploaded file list on input change
+    submitTransfer.addEventListener('click', handleSubmitData)
+
 </script>
 
 

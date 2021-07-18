@@ -1,5 +1,5 @@
-from flask import Blueprint
-from flask import render_template
+from flask import Blueprint, request, render_template
+from flask.json import jsonify
 
 main = Blueprint("main", __name__)
 
@@ -8,3 +8,11 @@ main = Blueprint("main", __name__)
 @main.route("/")
 def home():
     return render_template("main/index.html")
+
+
+@main.route("/upload-files")
+def upload_files():
+    print(request.data)
+    reply = {"status": "good job"}
+
+    return jsonify(reply)
