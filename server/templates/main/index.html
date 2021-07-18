@@ -203,24 +203,41 @@
 
     hiddenFileInput.addEventListener('change', handleFileUploadFile, false)
 
+    const updatePercentage = (percentage) => {
+        console.log(`Percentage: ${percentage} %`)
+        if (percentage === 100) {
+            console.log('Completed !!')
+        }
+    }
+
+    const request = new XMLHttpRequest()
+
+    request.upload.addEventListener('progress', (e) => {
+        console.log('Progress')
+        if (e.lengthComputable) {
+            const percentage = Math.round((e.loaded * 100) / e.total)
+            updatePercentage(percentage)
+        }
+    })
+
+    request.addEventListener("load", (e) => {
+        if (request.readyState === 4 && request.status === 200) {
+            console.log(JSON.parse(request.response))
+        }
+    })
+
+
     const handleSubmitData = () => {
+        const uri = '/upload-files'
         const data = new FormData()
+
+        request.open("POST", uri, true)
+
         for (const file of fileList) {
             data.append("files[]", file, file.name)
         }
 
-        data.append("test", new Blob(), "test.file")
-
-        return fetch('/upload-files', {
-            method: 'POST',
-            body: data
-        }).then(res => {
-            return res.json()
-        }).then(data => {
-            console.log(data)
-        }).catch(err => {
-            console.log(err)
-        })
+        request.send(data)
     }
 
     // Update uploaded file list on input change
