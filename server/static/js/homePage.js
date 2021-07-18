@@ -1,95 +1,103 @@
-let fileList = []
+let fileList = [];
 
-    // Create main request
-    const request = new XMLHttpRequest()
+// Create main request
+const request = new XMLHttpRequest();
 
-    // Form list 
-    const formList = document.getElementById("form-list")
+// Form list
+const formList = document.getElementById("form-list");
 
-    // Create more file button li
-    const moreButtonLi = document.createElement('li')
+// Create more file button li
+const moreButtonLi = document.createElement("li");
+// Form submit button
+const submitTransfer = document.getElementById("submit-transfer");
 
-    // Form submit button
-    const submitTransfer = document.getElementById("submit-transfer")
+// Uploaded files UL
+const uploadedFileList = document.getElementById("uploaded-file-list");
 
-    // Uploaded files UL
-    const uploadedFileList = document.getElementById("uploaded-file-list")
+// Get hidden inputs
+const hiddenFileInput = document.getElementById("hidden-file-input");
 
-    // Get hidden inputs
-    const hiddenFileInput = document.getElementById("hidden-file-input")
+// Get card body
+const cardBody = document.getElementById("card-body");
 
-    // Get card body
-    const cardBody = document.getElementById("card-body")
+// Get card Footer
+const cardFooter = document.querySelector(".card-footer");
 
-    // Get card Footer
-    const cardFooter = document.querySelector('.card-footer')
+// Handle file input click
+const handleFileInputClick = () => {
+  hiddenFileInput.click();
+};
 
-    // Handle file input click
-    const handleFileInputClick = () => {
-        hiddenFileInput.click()
-    }
+// Add event listeners to buttons
+document
+  .getElementById("upload-file-button")
+  .addEventListener("click", handleFileInputClick);
+document
+  .getElementById("upload-file-text")
+  .addEventListener("click", handleFileInputClick);
 
-    // Add event listeners to buttons
-    document.getElementById("upload-file-button").addEventListener('click', handleFileInputClick)
-    document.getElementById("upload-file-text").addEventListener('click', handleFileInputClick)
+const convertSize = (bytes) => {
+  const kb = bytes * 0.001;
+  if (kb === 0) {
+    return `${bytes} bytes`;
+  }
+  const truncate = Math.trunc(kb);
+  return `${truncate} KB`;
+};
 
-    const convertSize = (bytes) => {
-        const kb = bytes * 0.001
-        if (kb === 0) {
-            return `${bytes} bytes`
-        }
-        const truncate = Math.trunc(kb)
-        return `${truncate} KB`
-    }
-
-    // For each file in file list append li
-    const handleAddFileLiToList = () => {
-        fileList.forEach((file, index) => {
-            // Create Li
-            const li = document.createElement('li')
-            li.className = "file-list-item list-group-item d-flex justify-content-between align-items-start bg-light"
-            const liHtml = `
+// For each file in file list append li
+const handleAddFileLiToList = () => {
+  fileList.forEach((file, index) => {
+    // Create Li
+    const li = document.createElement("li");
+    li.className =
+      "file-list-item list-group-item d-flex justify-content-between align-items-start bg-light";
+    const liHtml = `
                 <div class="ms-2 me-auto">
-                    <div style="max-width:200px; line-height:1.1;" class="my-0 text-wrap">${file.name}</div>
-                    <div class="file-info text-muted fw-light my-0">${convertSize(file.size)} - ${file.type}</div>
+                    <div style="max-width:200px; line-height:1.1;" class="my-0 text-wrap">${
+                      file.name
+                    }</div>
+                    <div class="file-info text-muted fw-light my-0">${convertSize(
+                      file.size
+                    )} - ${file.type}</div>
                 </div>
-            `
-            li.innerHTML = liHtml
+            `;
+    li.innerHTML = liHtml;
 
-            // Create Delete button
-            const deleteButton = document.createElement('span')
-            deleteButton.className = "file-delete-button badge hover bg-danger rounded-pill"
-            deleteButton.innerHTML = "x"
-            deleteButton.addEventListener('click', () => {
-                handleItemDelete(index)
-            })
+    // Create Delete button
+    const deleteButton = document.createElement("span");
+    deleteButton.className =
+      "file-delete-button badge hover bg-danger rounded-pill";
+    deleteButton.innerHTML = "x";
+    deleteButton.addEventListener("click", () => {
+      handleItemDelete(index);
+    });
 
-            // Append Li
-            uploadedFileList.appendChild(li)
+    // Append Li
+    uploadedFileList.appendChild(li);
 
-            // Append delete button
-            li.appendChild(deleteButton)
-        })
-    }
+    // Append delete button
+    li.appendChild(deleteButton);
+  });
+};
 
-    const handleItemDelete = (index) => {
-        fileList.splice(index, 1)
-        updateFileListHtml()
-    }
+const handleItemDelete = (index) => {
+  fileList.splice(index, 1);
+  updateFileListHtml();
+};
 
+// Hide main card body
+const handleUploadButtonVisibilityToggle = () => {
+  if (fileList.length <= 0) {
+    cardBody.classList.remove("visually-hidden");
+  } else {
+    cardBody.classList.add("visually-hidden");
+  }
+};
 
-    // Hide main card body
-    const handleUploadButtonVisibilityToggle = () => {
-        if (fileList.length <= 0) {
-            cardBody.classList.remove("visually-hidden")
-        } else {
-            cardBody.classList.add("visually-hidden")
-        }
-    }
-
-    // Append add more button to UL
-    const handleMoreButtonLiAppend = () => {
-        const moreButtonLiHtml = `
+// Append add more button to UL
+const handleMoreButtonLiAppend = () => {
+  const moreButtonLiHtml = `
                 <div class="d-flex align-items-center">
                     <div class="upload-icon text-primary">
                         <div>
@@ -104,87 +112,86 @@ let fileList = []
                         </div>
                     </div>
                 </div>
-            `
+            `;
 
-        // If files in list append Li
-        if (fileList.length > 0) {
-            // Add ID and classes to li
-            moreButtonLi.id = "upload-more-button"
-            moreButtonLi.className = "hover list-group-item py-3 bg-light"
+  // If files in list append Li
+  if (fileList.length > 0) {
+    // Add ID and classes to li
+    moreButtonLi.id = "upload-more-button";
+    moreButtonLi.className = "hover list-group-item py-3 bg-light";
 
-            // Set li inner html and append to list
-            moreButtonLi.innerHTML = moreButtonLiHtml
-            uploadedFileList.appendChild(moreButtonLi)
+    // Set li inner html and append to list
+    moreButtonLi.innerHTML = moreButtonLiHtml;
+    uploadedFileList.appendChild(moreButtonLi);
 
-            // Add event listener to button
-            moreButtonLi.addEventListener('click', handleFileInputClick)
+    // Add event listener to button
+    moreButtonLi.addEventListener("click", handleFileInputClick);
 
-            // Remove if no files
-        } else {
-            moreButtonLi.removeEventListener('click', handleFileInputClick)
-            moreButtonLi.remove()
-        }
-    }
+    // Remove if no files
+  } else {
+    moreButtonLi.removeEventListener("click", handleFileInputClick);
+    moreButtonLi.remove();
+  }
+};
 
-    // File upload input change handler
-    const handleUploadFile = (e) => {
-        // Add file to list
-        fileList.push(e.target.files[0])
-        e.target.value = "";
-        updateFileListHtml()
-    }
+// File upload input change handler
+const handleUploadFile = (e) => {
+  // Add file to list
+  fileList.push(e.target.files[0]);
+  e.target.value = "";
+  updateFileListHtml();
+};
 
-    const updateFileListHtml = () => {
-        // Rest file list Ul
-        uploadedFileList.innerHTML = "";
-        handleAddFileLiToList()
+const updateFileListHtml = () => {
+  // Rest file list Ul
+  uploadedFileList.innerHTML = "";
+  handleAddFileLiToList();
 
-        handleUploadButtonVisibilityToggle()
-        handleMoreButtonLiAppend()
-    }
+  handleUploadButtonVisibilityToggle();
+  handleMoreButtonLiAppend();
+};
 
-    hiddenFileInput.addEventListener('change', handleUploadFile, false)
+hiddenFileInput.addEventListener("change", handleUploadFile, false);
 
-    const handleCardReset = () => {
-        window.location.reload()
-    }
+const handleCardReset = () => {
+  window.location.reload();
+};
 
-    const handleResponse = (response) => {
-        const url = response.url
-        // Set card body empty html
-        const cardProgressHtml = `
+const handleResponse = (response) => {
+  const url = response.url;
+  // Set card body empty html
+  const cardProgressHtml = `
             <div class="completed-container text-center">
                 <h3>Upload complete</h3>
                 <p class="py=0">Your URL is:</p>
                 <a target="blank" href=${url} class="underline">${url}</a>
             </div>
-        `
-        cardBody.innerHTML = cardProgressHtml
+        `;
+  cardBody.innerHTML = cardProgressHtml;
 
-        // Create reset button
-        const resetButton = document.createElement("button")
-        resetButton.onclick = handleCardReset
-        resetButton.className = "w-100 btn btn-lg btn-primary"
-        resetButton.innerHTML = "New Transfer"
+  // Create reset button
+  const resetButton = document.createElement("button");
+  resetButton.onclick = handleCardReset;
+  resetButton.className = "w-100 btn btn-lg btn-primary";
+  resetButton.innerHTML = "New Transfer";
 
-        // Show card footer and add reset button
-        cardFooter.classList.remove("visually-hidden")
-        cardFooter.innerHTML = ""
-        cardFooter.appendChild(resetButton)
-    }
+  // Show card footer and add reset button
+  cardFooter.classList.remove("visually-hidden");
+  cardFooter.innerHTML = "";
+  cardFooter.appendChild(resetButton);
+};
 
-    const updatePercentage = (percentage) => {
-        if (document.body.contains(formList)) {
-            formList.classList.add("visually-hidden")
-        }
-        // Remove file list and form list
-        uploadedFileList.remove()
-        handleUploadButtonVisibilityToggle()
-        cardFooter.classList.add("visually-hidden")
+const updatePercentage = (percentage) => {
+  if (document.body.contains(formList)) {
+    formList.classList.add("visually-hidden");
+  }
+  // Remove file list and form list
+  uploadedFileList.remove();
+  handleUploadButtonVisibilityToggle();
+  cardFooter.classList.add("visually-hidden");
 
-
-        // Set card body empty html
-        const cardProgressHtml = `
+  // Set card body empty html
+  const cardProgressHtml = `
             <div class="progress-container text-center">
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped progress-bar-animated" 
@@ -192,48 +199,60 @@ let fileList = []
                 </div>    
                 <p class="py-5">Progress: ${percentage} %</p>
             </div>
-        `
-        cardBody.innerHTML = cardProgressHtml
-    }
+        `;
+  cardBody.innerHTML = cardProgressHtml;
+};
 
-    request.upload.addEventListener('progress', (e) => {
-        console.log('Progress')
-        if (e.lengthComputable) {
-            const percentage = Math.round((e.loaded * 100) / e.total)
-            updatePercentage(percentage)
-        }
-    })
+request.upload.addEventListener("progress", (e) => {
+  if (e.lengthComputable) {
+    const percentage = Math.round((e.loaded * 100) / e.total);
+    updatePercentage(percentage);
+  }
+});
 
-    request.addEventListener("load", (e) => {
-        if (request.readyState === 4 && request.status === 200) {
-            handleResponse(JSON.parse(request.response))
-        }
-    })
+request.addEventListener("load", (e) => {
+  if (request.readyState === 4 && request.status === 200) {
+    handleResponse(JSON.parse(request.response));
+  }
+});
 
+const handleSubmitData = () => {
+  const uri = "/upload-files";
+  const data = new FormData();
+  const fromEmail = document.getElementById("from-email-input").value;
+  const toEmail = document.getElementById("to-email-input").value;
+  const message = document.getElementById("message-input").value;
 
-    const handleSubmitData = () => {
-        const uri = '/upload-files'
-        const data = new FormData()
-        const fromEmail = document.getElementById('from-email-input').value
-        const toEmail = document.getElementById('to-email-input').value
-        const message = document.getElementById('message-input').value
+  if (fromEmail === "") {
+    console.log("From Email needs to be present");
+    return;
+  }
 
-        request.open("POST", uri, true)
+  if (toEmail === "") {
+    console.log("To Email needs to be present");
+    return;
+  }
 
-        for (const file of fileList) {
-            data.append("files[]", file, file.name)
-        }
-        
-        data.append("to_email", toEmail)
-        data.append("from_email", fromEmail)
-        data.append("message", message)
+  if (fileList.length === 0) {
+    console.log("There needs to be files present to upload");
+    return;
+  }
 
-        // Empty file list
-        fileList = []
+  request.open("POST", uri, true);
 
+  for (const file of fileList) {
+    data.append("files[]", file, file.name);
+  }
 
-        request.send(data)
-    }
+  data.append("to_email", toEmail);
+  data.append("from_email", fromEmail);
+  data.append("message", message);
 
-    // Update uploaded file list on input change
-    submitTransfer.addEventListener('click', handleSubmitData)
+  // Empty file list
+  fileList = [];
+
+  request.send(data);
+};
+
+// Update uploaded file list on input change
+submitTransfer.addEventListener("click", handleSubmitData);
