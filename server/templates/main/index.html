@@ -30,13 +30,21 @@
                     </form>
                 </div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item">An item</li>
-                    <li class="list-group-item">A second item</li>
-                    <li class="list-group-item">A third item</li>
+                    <li class="border-0 list-group-item"><input class="form-control form-control-sm" type="email"
+                            placeholder="To Email" id="from-email-input">
+                    </li>
+                    <li class="list-group-item border-0"><input class="form-control form-control-sm" type="email"
+                            placeholder="From Email" id="to-email-input">
+                    </li>
+                    </li>
+                    <li class="list-group-item border-0"><textarea class="form-control form-control-sm" type="text"
+                            multiline rows=3 placeholder="Message" id="message-input"></textarea>
+                    </li>
+                    </li>
                 </ul>
 
                 <div class="card-footer py-3">
-                    <button type="button" class="w-100 btn btn-lg btn-primary" id='submit-transfer'>Z-Transfer</button>
+                    <button type="button" class="w-100 btn btn-lg btn-primary" id='submit-transfer'>Transfer</button>
                 </div>
             </div>
         </div>
@@ -83,15 +91,50 @@
     document.getElementById("upload-file-button").addEventListener('click', handleFileInputClick)
     document.getElementById("upload-file-text").addEventListener('click', handleFileInputClick)
 
+    const convertSize = (bytes) => {
+        const kb = bytes * 0.001
+        if (kb === 0) {
+            return `${bytes} bytes`
+        }
+        const truncate = Math.trunc(kb)
+        return `${truncate} KB`
+    }
+
     // For each file in file list append li
     const handleAddFileLiToList = () => {
-        fileList.forEach(file => {
+        fileList.forEach((file, index) => {
+            // Create Li
             const li = document.createElement('li')
-            li.className = "list-group-item bg-light"
-            li.innerHTML = `${file.name}`
+            li.className = "file-list-item list-group-item d-flex justify-content-between align-items-start bg-light"
+            const liHtml = `
+                <div class="ms-2 me-auto">
+                    <div class="my-0">${file.name}</div>
+                    <div class="file-info text-muted fw-light my-0">${convertSize(file.size)} - ${file.type}</div>
+                </div>
+            `
+            li.innerHTML = liHtml
+
+            // Create Delete button
+            const deleteButton = document.createElement('span')
+            deleteButton.className = "file-delete-button badge hover bg-danger rounded-pill"
+            deleteButton.innerHTML = "x"
+            deleteButton.addEventListener('click', () => {
+                handleItemDelete(index)
+            })
+
+            // Append Li
             uploadedFileList.appendChild(li)
+
+            // Append delete button
+            li.appendChild(deleteButton)
         })
     }
+
+    const handleItemDelete = (index) => {
+        fileList.splice(index, 1)
+        updateFileListHtml()
+    }
+
 
     // Hide main card body
     const handleSelectFileHide = () => {
@@ -125,10 +168,7 @@
         if (fileList.length > 0) {
             // Add ID and classes to li
             moreButtonLi.id = "upload-more-button"
-            const classList = ["hover", "list-group-item", "py-3", "bg-light"]
-            classList.forEach(item => {
-                moreButtonLi.classList.add(item)
-            });
+            moreButtonLi.className = "hover list-group-item py-3 bg-light"
 
             // Set li inner html and append to list
             moreButtonLi.innerHTML = moreButtonLiHtml
@@ -153,11 +193,14 @@
 
 
     // File upload input change handler
-    const handleFileInputChange = (e) => {
+    const handleFileUploadFile = (e) => {
         // Add file to list
         fileList.push(e.target.files[0])
+        e.target.value = "";
+        updateFileListHtml()
+    }
 
-
+    const updateFileListHtml = () => {
         // Rest file list Ul
         uploadedFileList.innerHTML = "";
         handleAddFileLiToList()
@@ -166,8 +209,7 @@
         handleMoreButtonLiAppend()
     }
 
-    hiddenFileInput.addEventListener('change', handleFileInputChange, false)
-
+    hiddenFileInput.addEventListener('change', handleFileUploadFile, false)
 </script>
 
 
