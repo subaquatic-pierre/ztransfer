@@ -29,7 +29,8 @@
                         </div>
                     </form>
                 </div>
-                <ul class="list-group list-group-flush">
+
+                <ul id="form-list" class="list-group list-group-flush">
                     <li class="border-0 list-group-item"><input class="form-control form-control-sm" type="email"
                             placeholder="To Email" id="from-email-input">
                     </li>
@@ -65,7 +66,13 @@
 </main>
 
 <script>
-    const fileList = []
+    let fileList = []
+
+    // Create main request
+    const request = new XMLHttpRequest()
+
+    // Form list 
+    const formList = document.getElementById("form-list")
 
     // Create more file button li
     const moreButtonLi = document.createElement('li')
@@ -81,6 +88,9 @@
 
     // Get card body
     const cardBody = document.getElementById("card-body")
+
+    // Get card Footer
+    const cardFooter = document.querySelector('.card-footer')
 
     // Handle file input click
     const handleFileInputClick = () => {
@@ -108,7 +118,7 @@
             li.className = "file-list-item list-group-item d-flex justify-content-between align-items-start bg-light"
             const liHtml = `
                 <div class="ms-2 me-auto">
-                    <div class="my-0">${file.name}</div>
+                    <div style="max-width:200px; line-height:1.1;" class="my-0 text-wrap">${file.name}</div>
                     <div class="file-info text-muted fw-light my-0">${convertSize(file.size)} - ${file.type}</div>
                 </div>
             `
@@ -137,7 +147,7 @@
 
 
     // Hide main card body
-    const handleSelectFileHide = () => {
+    const handleUploadButtonVisibilityToggle = () => {
         if (fileList.length <= 0) {
             cardBody.classList.remove("visually-hidden")
         } else {
@@ -185,7 +195,7 @@
     }
 
     // File upload input change handler
-    const handleFileUploadFile = (e) => {
+    const handleUploadFile = (e) => {
         // Add file to list
         fileList.push(e.target.files[0])
         e.target.value = "";
@@ -197,20 +207,62 @@
         uploadedFileList.innerHTML = "";
         handleAddFileLiToList()
 
-        handleSelectFileHide()
+        handleUploadButtonVisibilityToggle()
         handleMoreButtonLiAppend()
     }
 
-    hiddenFileInput.addEventListener('change', handleFileUploadFile, false)
+    hiddenFileInput.addEventListener('change', handleUploadFile, false)
 
-    const updatePercentage = (percentage) => {
-        console.log(`Percentage: ${percentage} %`)
-        if (percentage === 100) {
-            console.log('Completed !!')
-        }
+    const handleCardReset = () => {
+        window.location.reload()
     }
 
-    const request = new XMLHttpRequest()
+    const handleResponse = (response) => {
+        const url = response.url
+        // Set card body empty html
+        const cardProgressHtml = `
+            <div class="completed-container text-center">
+                <h3>Upload complete</h3>
+                <p class="py=0">Your URL is:</p>
+                <a target="blank" href=${url} class="underline">${url}</a>
+            </div>
+        `
+        cardBody.innerHTML = cardProgressHtml
+
+        // Create reset button
+        const resetButton = document.createElement("button")
+        resetButton.onclick = handleCardReset
+        resetButton.className = "w-100 btn btn-lg btn-primary"
+        resetButton.innerHTML = "New Transfer"
+
+        // Show card footer and add reset button
+        cardFooter.classList.remove("visually-hidden")
+        cardFooter.innerHTML = ""
+        cardFooter.appendChild(resetButton)
+    }
+
+    const updatePercentage = (percentage) => {
+        if (document.body.contains(formList)) {
+            formList.classList.add("visually-hidden")
+        }
+        // Remove file list and form list
+        uploadedFileList.remove()
+        handleUploadButtonVisibilityToggle()
+        cardFooter.classList.add("visually-hidden")
+
+
+        // Set card body empty html
+        const cardProgressHtml = `
+            <div class="progress-container text-center">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                    role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: ${percentage}%"></div>
+                </div>    
+                <p class="py-5">Progress: ${percentage} %</p>
+            </div>
+        `
+        cardBody.innerHTML = cardProgressHtml
+    }
 
     request.upload.addEventListener('progress', (e) => {
         console.log('Progress')
@@ -222,7 +274,7 @@
 
     request.addEventListener("load", (e) => {
         if (request.readyState === 4 && request.status === 200) {
-            console.log(JSON.parse(request.response))
+            handleResponse(JSON.parse(request.response))
         }
     })
 
@@ -236,6 +288,10 @@
         for (const file of fileList) {
             data.append("files[]", file, file.name)
         }
+
+        // Empty file list
+        fileList = []
+
 
         request.send(data)
     }

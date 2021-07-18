@@ -50,6 +50,14 @@ a:hover {
 
 /* Card Section */
 
+.progress-container {
+  padding: 3rem 0;
+}
+
+.completed-container {
+  padding: 3rem 0;
+}
+
 .hover:hover {
   cursor: pointer;
 }

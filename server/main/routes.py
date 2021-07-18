@@ -21,4 +21,4 @@ def upload_files():
             file_path = os.path.join(current_app.root_path, "uploads", file.filename)
             file.save(file_path)
 
-    return jsonify(data={"Cool": "Data"})
+    return jsonify({"url": "https://www.somecoolurl.com"})
