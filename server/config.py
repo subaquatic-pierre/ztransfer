@@ -16,3 +16,5 @@ class Config:
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
     MAIL_USE_TLS = True
+    WALLET_ID = os.environ.get("WALLET_ID")
+    WALLET_PUBLIC_KEY = os.environ.get("WALLET_PUBLIC_KEY")

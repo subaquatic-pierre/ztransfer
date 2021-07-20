@@ -3,3 +3,5 @@ node_modules
 .env
 uploads
 __pycache__
+wallet_data.json
+wallet_phrase.md
