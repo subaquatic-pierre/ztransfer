@@ -1,8 +1,8 @@
 from flask import Blueprint, request, render_template, current_app, redirect
 import os
-import boto3
-from conf import aws_conf as conf
 from flask.json import jsonify
+from flask_mail import Message
+from server.email import send_email
 
 main = Blueprint("main", __name__)
 
@@ -23,14 +23,14 @@ def upload_files():
         message = request.form.get("message")
 
         # Send email
-        ses_client = boto3.client("ses")
         subject = "File Upload"
         body_html = render_template(
-            "email/upload.html", data={to_email, from_email, message}
+            "email/upload.html",
+            data={"to_email": to_email, "from_email": from_email, "message": message},
         )
-        response = ses_client.send_email(
-            Destination={"ToAddresses": [to_email, from_email]}, Message={"Body": {}}
-        )
+
+        recipients = [to_email]
+        send_email(current_app)
 
         print(f"From Email: {from_email} \n To Email: {to_email} \n Message: {message}")
 
