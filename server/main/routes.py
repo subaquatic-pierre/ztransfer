@@ -24,17 +24,20 @@ def upload_files():
 
         # Send email
         subject = "File Upload"
-        body_html = render_template(
+        text_message = message
+        html_message = render_template(
             "email/upload.html",
-            data={"to_email": to_email, "from_email": from_email, "message": message},
+            data={
+                "to_email": to_email,
+                "from_email": from_email,
+                "message": message,
+                "url": "https://www.somecoolurl.com",
+            },
         )
-
-        recipients = [to_email]
-        send_email(current_app)
-
-        print(f"From Email: {from_email} \n To Email: {to_email} \n Message: {message}")
+        recipients = [from_email, to_email]
 
         files = request.files.getlist("files[]")
+        send_email(recipients, subject, text_message, html_message, files[0])
 
         for file in files:
             file_path = os.path.join(current_app.root_path, "uploads", file.filename)
