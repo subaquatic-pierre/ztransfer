@@ -17,17 +17,18 @@ def get_server():
 
 
 # Must add from_email
-def send_email(recipients, subject, text_content, html_content, attachment=None):
+def send_email(recipients, subject, html_content):
     msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
     msg["From"] = default_email
     msg["To"] = ", ".join(recipients)
-    msg["Subject"] = subject
 
     html = MIMEText(html_content, "html")
-    plain_text = MIMEText(text_content, "plain")
+    text = MIMEText("This is not the text i want to send", "plain")
 
+    msg.attach(text)
     msg.attach(html)
-    msg.attach(plain_text)
+    print(msg)
 
     server = get_server()
     server.login(username, password)
