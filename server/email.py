@@ -28,7 +28,6 @@ def send_email(recipients, subject, html_content):
 
     msg.attach(text)
     msg.attach(html)
-    print(msg)
 
     server = get_server()
     server.login(username, password)
