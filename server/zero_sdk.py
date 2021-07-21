@@ -65,8 +65,8 @@ def get_balance():
     pprint(res)
 
 
-def add_tokens(num_tokens):
-    url = f"{base_url}/miner01/v1/transaction/put"
+def add_tokens():
+    url = f"{BASE_URL}/miner01/v1/transaction/put"
     headers = {"content-type: application/json; charset=utf-8"}
 
     # Creation date
@@ -77,25 +77,28 @@ def add_tokens(num_tokens):
     transaction_data_hash.update(b'{"name":"pour","input":{},"name":null}')
 
     hash_array = [
-        creation_date,
+        f"{creation_date}",
         WALLET_ID,
         TO_CLIENT_ID,
-        10000000000,
-        transaction_data_hash,
+        f"{10000000000}",
+        f"{transaction_data_hash.digest()}",
     ]
 
+    hash_string = ":".join(hash_array)
+    print(hash_string)
+
     # Build raw data
-    data = {
-        "hash": "{{hash_of_request_data}}",
-        "signature": "{{signature}}",
-        "version": "1.0",
-        "client_id": wallet_id,
-        "creation_date": creation_date,
-        "to_client_id": "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3",
-        "transaction_data": '{"name":"pour","input":{},"name":null}',
-        "transaction_fee": 0,
-        "transaction_type": 1000,
-        "transaction_value": 10000000000,
-        "txn_output_hash": "",
-        "public_key": wallet_public_key,
-    }
+    # data = {
+    #     "hash": "{{hash_of_request_data}}",
+    #     "signature": "{{signature}}",
+    #     "version": "1.0",
+    #     "client_id": wallet_id,
+    #     "creation_date": creation_date,
+    #     "to_client_id": "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3",
+    #     "transaction_data": '{"name":"pour","input":{},"name":null}',
+    #     "transaction_fee": 0,
+    #     "transaction_type": 1000,
+    #     "transaction_value": 10000000000,
+    #     "txn_output_hash": "",
+    #     "public_key": wallet_public_key,
+    # }
