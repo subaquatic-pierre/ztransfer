@@ -1,9 +1,11 @@
 import json
+from blspy import PrivateKey, Util, AugSchemeMPL, PopSchemeMPL, G1Element, G2Element
 import requests
-import hashlib
+from hashlib import sha3_256
 from time import time
 from server.network_data import network_data
 from server.wallet_data import wallet_data
+from server.utils import gen_sign_seed_array
 
 TO_CLIENT_ID = "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3"
 BASE_URL = "https://beta.0chain.net"
@@ -67,38 +69,36 @@ def get_balance():
 
 def add_tokens():
     url = f"{BASE_URL}/miner01/v1/transaction/put"
-    headers = {"content-type: application/json; charset=utf-8"}
+    headers = {"Content-Type": "application/json; charset=utf-8"}
 
     # Creation date
     creation_date = int(time())
 
     # Transaction data hash
-    transaction_data_hash = hashlib.sha3_256()
-    transaction_data_hash.update(b'{"name":"pour","input":{},"name":null}')
+    transaction_data_hash = sha3_256(b'{"name":"pour","input":{},"name":null}')
+    payload_string = f'"creation_date":{creation_date},"wallet_id":{WALLET_ID},"to_client_id":{TO_CLIENT_ID},"transaction_value":10000000000,"transaction_data":{transaction_data_hash.hexdigest()}'
 
-    hash_array = [
-        f"{creation_date}",
-        WALLET_ID,
-        TO_CLIENT_ID,
-        f"{10000000000}",
-        f"{transaction_data_hash.digest()}",
-    ]
+    sign_key = AugSchemeMPL.key_gen(gen_sign_seed_array())
+    payload_bytes = bytes(payload_string, "utf-8")
 
-    hash_string = ":".join(hash_array)
-    print(hash_string)
+    signature = AugSchemeMPL.sign(sign_key, payload_bytes)
+    payload_hash = sha3_256(payload_bytes)
 
     # Build raw data
-    # data = {
-    #     "hash": "{{hash_of_request_data}}",
-    #     "signature": "{{signature}}",
-    #     "version": "1.0",
-    #     "client_id": wallet_id,
-    #     "creation_date": creation_date,
-    #     "to_client_id": "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3",
-    #     "transaction_data": '{"name":"pour","input":{},"name":null}',
-    #     "transaction_fee": 0,
-    #     "transaction_type": 1000,
-    #     "transaction_value": 10000000000,
-    #     "txn_output_hash": "",
-    #     "public_key": wallet_public_key,
-    # }
+    data = {
+        "hash": payload_hash.hexdigest(),
+        "signature": f"{signature}",
+        "version": "1.0",
+        "client_id": WALLET_ID,
+        "creation_date": creation_date,
+        "to_client_id": "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3",
+        "transaction_data": '{"name":"pour","input":{},"name":null}',
+        "transaction_fee": 0,
+        "transaction_type": 1000,
+        "transaction_value": 10000000000,
+        "txn_output_hash": "",
+        "public_key": WALLET_PUBLIC_KEY,
+    }
+
+    res = make_request(url, method="POST", data=data, headers=headers)
+    print(res)
