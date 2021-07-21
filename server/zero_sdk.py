@@ -1,5 +1,5 @@
 import json
-from blspy import PrivateKey, Util, AugSchemeMPL, PopSchemeMPL, G1Element, G2Element
+from blspy import AugSchemeMPL
 import requests
 from hashlib import sha3_256
 from time import time
@@ -11,6 +11,14 @@ TO_CLIENT_ID = "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3
 BASE_URL = "https://beta.0chain.net"
 WALLET_PUBLIC_KEY = wallet_data["Public_Key"]
 WALLET_ID = wallet_data["ID"]
+MNEMONIC = wallet_data["Secret_Phrase"]
+PASSPHRASE = "0chain-client-split-key"
+
+
+def heroku_sign(payload):
+    url = f"https://example-0chain-crypto.herokuapp.com/sign?data={payload}&mnemonics={MNEMONIC}&passphrase={PASSPHRASE}"
+    res = requests.get(url)
+    return res.json()["hexString"]
 
 
 def pprint(res):
@@ -20,6 +28,24 @@ def pprint(res):
 def hash(string):
     hash_object = sha3_256(bytes(string, "utf-8"))
     return f"{hash_object.hexdigest()}"
+
+
+def sign(payload):
+    # Create seed from mnemonic and '0chai'
+    seed = f"{MNEMONIC} 0chain-client-split-key"
+
+    # Convert array to bytes
+    seed_bytes = bytes(seed, "utf-8")
+
+    # Generate private key sith seed
+    private_key = AugSchemeMPL.key_gen(seed_bytes)
+
+    # Convert payload string to bytes
+    message_bytes = bytes(payload, "utf-8")
+
+    # Generate signature
+    signature = AugSchemeMPL.sign(private_key, message_bytes)
+    return signature.hex()
 
 
 def get_network_info():
@@ -47,7 +73,7 @@ def create_wallet():
         }
 
         # Make request
-        res = requests.put(url, data=data, headers=headers)
+        res = requests.put(url, json=data, headers=headers)
         results.append(res)
 
     for res in results:
@@ -71,22 +97,18 @@ def add_tokens():
     transaction_data_string = '{"name":"pour","input":{},"name":null}'
     transaction_data_hash = hash(transaction_data_string)
 
+    # Main hash payload
     hash_string = f"{creation_date}:{WALLET_ID}:{TO_CLIENT_ID}:10000000000:{transaction_data_hash}"
     hash_payload = hash(hash_string)
 
-    print(transaction_data_string)
-    print(transaction_data_hash)
-    print(hash_string)
-    print(hash_payload)
-
-    # sign_key = AugSchemeMPL.key_gen(gen_sign_seed_array())
-
-    # signature = AugSchemeMPL.sign(sign_key, payload_bytes)
+    # signature = sign(hash_payload)
+    signature = heroku_sign(hash_payload)
+    print(signature)
 
     # Build raw data
     data = {
         "hash": hash_payload,
-        "signature": "{{signiture}}",
+        "signature": signature,
         "version": "1.0",
         "client_id": WALLET_ID,
         "creation_date": creation_date,
@@ -99,5 +121,6 @@ def add_tokens():
         "public_key": WALLET_PUBLIC_KEY,
     }
 
-    # res = requests.post(url, data=data, headers=headers)
-    # print(res)
+    res = requests.post(url, json=data, headers=headers)
+    print(res)
+    return res
