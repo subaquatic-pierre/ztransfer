@@ -17,21 +17,14 @@ def pprint(res):
     print(json.dumps(res.json(), indent=4))
 
 
-def make_request(url, method="GET", data=None, headers=None):
-    if method == "GET":
-        res = requests.get(url, headers=headers)
-        return res
-    elif method == "POST":
-        res = requests.post(url, data=data, headers=headers)
-        return res
-    elif method == "PUT":
-        res = requests.put(url, data=data, headers=headers)
-        return res
+def hash(string):
+    hash_object = sha3_256(bytes(string, "utf-8"))
+    return f"{hash_object.hexdigest()}"
 
 
 def get_network_info():
     url = f"{BASE_URL}/dns/network"
-    res = make_request(url)
+    res = requests.get(url)
     pprint(res)
 
 
@@ -54,7 +47,7 @@ def create_wallet():
         }
 
         # Make request
-        res = make_request(url, method="PUT", data=data, headers=headers)
+        res = requests.put(url, data=data, headers=headers)
         results.append(res)
 
     for res in results:
@@ -63,7 +56,7 @@ def create_wallet():
 
 def get_balance():
     url = f"{BASE_URL}/sharder01/v1/client/get/balance?client_id={WALLET_ID}"
-    res = make_request(url)
+    res = requests.get(url)
     pprint(res)
 
 
@@ -75,19 +68,25 @@ def add_tokens():
     creation_date = int(time())
 
     # Transaction data hash
-    transaction_data_hash = sha3_256(b'{"name":"pour","input":{},"name":null}')
-    payload_string = f'"creation_date":{creation_date},"wallet_id":{WALLET_ID},"to_client_id":{TO_CLIENT_ID},"transaction_value":10000000000,"transaction_data":{transaction_data_hash.hexdigest()}'
+    transaction_data_string = '{"name":"pour","input":{},"name":null}'
+    transaction_data_hash = hash(transaction_data_string)
 
-    sign_key = AugSchemeMPL.key_gen(gen_sign_seed_array())
-    payload_bytes = bytes(payload_string, "utf-8")
+    hash_string = f"{creation_date}:{WALLET_ID}:{TO_CLIENT_ID}:10000000000:{transaction_data_hash}"
+    hash_payload = hash(hash_string)
 
-    signature = AugSchemeMPL.sign(sign_key, payload_bytes)
-    payload_hash = sha3_256(payload_bytes)
+    print(transaction_data_string)
+    print(transaction_data_hash)
+    print(hash_string)
+    print(hash_payload)
+
+    # sign_key = AugSchemeMPL.key_gen(gen_sign_seed_array())
+
+    # signature = AugSchemeMPL.sign(sign_key, payload_bytes)
 
     # Build raw data
     data = {
-        "hash": payload_hash.hexdigest(),
-        "signature": f"{signature}",
+        "hash": hash_payload,
+        "signature": "{{signiture}}",
         "version": "1.0",
         "client_id": WALLET_ID,
         "creation_date": creation_date,
@@ -100,5 +99,5 @@ def add_tokens():
         "public_key": WALLET_PUBLIC_KEY,
     }
 
-    res = make_request(url, method="POST", data=data, headers=headers)
-    print(res)
+    # res = requests.post(url, data=data, headers=headers)
+    # print(res)
