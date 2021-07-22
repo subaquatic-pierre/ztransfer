@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from hashlib import sha3_256
 
 
@@ -9,3 +10,7 @@ def pprint(res):
 def hash_string(payload_string):
     hash_object = sha3_256(bytes(payload_string, "utf-8"))
     return f"{hash_object.hexdigest()}"
+
+
+def get_project_root():
+    return Path(__file__).parent.resolve().parent.resolve()
