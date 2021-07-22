@@ -2,7 +2,7 @@ from sys import stdout
 from pathlib import Path
 import requests
 import subprocess
-from server.wallet_data import wallet_data
+from server.zero_sdk.wallet_data import wallet_data
 
 root_dir = Path(__file__).parent.resolve()
 

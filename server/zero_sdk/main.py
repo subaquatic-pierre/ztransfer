@@ -1,26 +1,17 @@
-import json
-from blspy import AugSchemeMPL
 import requests
-from hashlib import sha3_256
 from time import time
-from server.network_data import network_data
-from server.wallet_data import wallet_data
-from server.sign import sign_payload
 
-TO_CLIENT_ID = "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3"
-BASE_URL = "https://beta.0chain.net"
-WALLET_PUBLIC_KEY = wallet_data["keys"][0]["public_key"]
-WALLET_PRIVATE_KEY = wallet_data["keys"][0]["private_key"]
-WALLET_ID = wallet_data["client_id"]
-
-
-def pprint(res):
-    print(json.dumps(res.json(), indent=4))
-
-
-def hash_string(payload_string):
-    hash_object = sha3_256(bytes(payload_string, "utf-8"))
-    return f"{hash_object.hexdigest()}"
+from server.zero_sdk.utils import pprint, hash_string
+from server.zero_sdk.network_data import network_data
+from server.zero_sdk.sign import sign_payload
+from server.zero_sdk.const import (
+    MAIN_ALLOCATION_ID,
+    TO_CLIENT_ID,
+    BASE_URL,
+    WALLET_PUBLIC_KEY,
+    WALLET_PRIVATE_KEY,
+    WALLET_ID,
+)
 
 
 def get_network_info():
@@ -29,7 +20,7 @@ def get_network_info():
     pprint(res)
 
 
-def create_wallet():
+def restore_wallet():
     miners = network_data.get("miners")
     results = []
     for miner in miners:
