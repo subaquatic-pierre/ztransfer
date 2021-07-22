@@ -9,8 +9,8 @@ from server.sign import sign_payload
 
 TO_CLIENT_ID = "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3"
 BASE_URL = "https://beta.0chain.net"
-WALLET_PUBLIC_KEY = wallet_data["public_key"]
-WALLET_PRIVATE_KEY = wallet_data["private_key"]
+WALLET_PUBLIC_KEY = wallet_data["keys"][0]["public_key"]
+WALLET_PRIVATE_KEY = wallet_data["keys"][0]["private_key"]
 WALLET_ID = wallet_data["client_id"]
 
 
@@ -18,7 +18,7 @@ def pprint(res):
     print(json.dumps(res.json(), indent=4))
 
 
-def hash_payload(payload_string):
+def hash_string(payload_string):
     hash_object = sha3_256(bytes(payload_string, "utf-8"))
     return f"{hash_object.hexdigest()}"
 
@@ -70,11 +70,11 @@ def add_tokens():
 
     # Transaction data hash
     transaction_data_string = '{"name":"pour","input":{},"name":null}'
-    transaction_data_hash = hash(transaction_data_string)
+    transaction_data_hash = hash_string(transaction_data_string)
 
     # Main hash payload
-    hash_string = f"{creation_date}:{WALLET_ID}:{TO_CLIENT_ID}:10000000000:{transaction_data_hash}"
-    hashed_payload = hash_payload(hash_string)
+    payload_string = f"{creation_date}:{WALLET_ID}:{TO_CLIENT_ID}:10000000000:{transaction_data_hash}"
+    hashed_payload = hash_string(payload_string)
 
     signature = sign_payload(WALLET_PRIVATE_KEY, hashed_payload)
     if signature == False:
@@ -97,5 +97,5 @@ def add_tokens():
     }
 
     res = requests.post(url, json=data, headers=headers)
-    print(res)
+    print(res.text)
     return res
