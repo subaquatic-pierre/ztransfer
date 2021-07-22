@@ -17,7 +17,6 @@ def create_app():
     app = Flask(__name__)
     # Configure app from Config class defined in config.py module
     app.config.from_object(Config)
-    print(Config.WALLET_ID)
 
     # Initialize extensions with init_app to configure to use app
     db.init_app(app)
