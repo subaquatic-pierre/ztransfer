@@ -77,6 +77,8 @@ def add_tokens():
     hash_payload = hash(hash_string)
 
     signature = sign(WALLET_PRIVATE_KEY, hash_payload)
+    if signature == False:
+        raise Exception("There was an error signing the transaction")
 
     # Build raw data
     data = {

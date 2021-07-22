@@ -1,7 +1,7 @@
 from sys import stdout
 from pathlib import Path
-from Naked.toolshed.shell import muterun_js
 import requests
+import subprocess
 from server.wallet_data import wallet_data
 
 root_dir = Path(__file__).parent.resolve()
@@ -12,14 +12,19 @@ MNEMONIC = wallet_data["Secret_Phrase"]
 
 
 def sign(private_key, hash_payload):
-    script = f"{root_dir}/lib/bn254_signature_js/index.js"
-    print(script)
-    response = muterun_js(script, f"{private_key} {hash_payload}")
-    if response.exitcode == 0:
-        sig = response.stdout
+    file_path = f"{root_dir}/lib/bn254_signature_js/index.js"
+
+    command = subprocess.Popen(
+        ["node", file_path, private_key, hash_payload],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    sig, err = command.communicate()
+    if err == None:
         return sig.decode()
     else:
-        print("There was an error signing the payload")
+        return False
 
 
 def heroku_sign(payload):
