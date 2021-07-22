@@ -8,10 +8,10 @@ root_dir = Path(__file__).parent.resolve()
 
 SIGN_PUB_KEY = "d137d561a41be6a76c1998168d0b8561658576851e9006cde7538fd705093f022d41b0cbc78be80e562e4f5ccbc0bbc6690d7a2b765de96f645ac5d18a21ac11"
 PASSPHRASE = "0chain-client-split-key"
-MNEMONIC = wallet_data["Secret_Phrase"]
+MNEMONIC = wallet_data["mnemonics"]
 
 
-def sign(private_key, hash_payload):
+def sign_payload(private_key, hash_payload):
     file_path = f"{root_dir}/lib/bn254_signature_js/index.js"
 
     command = subprocess.Popen(

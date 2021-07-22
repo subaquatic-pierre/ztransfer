@@ -5,21 +5,21 @@ from hashlib import sha3_256
 from time import time
 from server.network_data import network_data
 from server.wallet_data import wallet_data
-from server.sign import sign
+from server.sign import sign_payload
 
 TO_CLIENT_ID = "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3"
 BASE_URL = "https://beta.0chain.net"
-WALLET_PUBLIC_KEY = wallet_data["Public_Key"]
-WALLET_PRIVATE_KEY = wallet_data["Private_Key"]
-WALLET_ID = wallet_data["ID"]
+WALLET_PUBLIC_KEY = wallet_data["public_key"]
+WALLET_PRIVATE_KEY = wallet_data["private_key"]
+WALLET_ID = wallet_data["client_id"]
 
 
 def pprint(res):
     print(json.dumps(res.json(), indent=4))
 
 
-def hash(string):
-    hash_object = sha3_256(bytes(string, "utf-8"))
+def hash_payload(payload_string):
+    hash_object = sha3_256(bytes(payload_string, "utf-8"))
     return f"{hash_object.hexdigest()}"
 
 
@@ -74,21 +74,21 @@ def add_tokens():
 
     # Main hash payload
     hash_string = f"{creation_date}:{WALLET_ID}:{TO_CLIENT_ID}:10000000000:{transaction_data_hash}"
-    hash_payload = hash(hash_string)
+    hashed_payload = hash_payload(hash_string)
 
-    signature = sign(WALLET_PRIVATE_KEY, hash_payload)
+    signature = sign_payload(WALLET_PRIVATE_KEY, hashed_payload)
     if signature == False:
         raise Exception("There was an error signing the transaction")
 
     # Build raw data
     data = {
-        "hash": hash_payload,
+        "hash": hashed_payload,
         "signature": signature,
         "version": "1.0",
         "client_id": WALLET_ID,
         "creation_date": creation_date,
-        "to_client_id": "6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d3",
-        "transaction_data": '{"name":"pour","input":{},"name":null}',
+        "to_client_id": TO_CLIENT_ID,
+        "transaction_data": transaction_data_string,
         "transaction_fee": 0,
         "transaction_type": 1000,
         "transaction_value": 10000000000,
