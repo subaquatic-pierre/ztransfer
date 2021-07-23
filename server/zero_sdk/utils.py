@@ -21,9 +21,11 @@ def get_home_path():
     return f"{Path().home()}"
 
 
-def network_url_from_dns_path(dns_path: str) -> str:
-    dns_path.split("/")
-    return dns_path[:-1].join("")
+def network_url_from_config(network_config) -> str:
+    split = network_config["block_worker"].split("/")
+    new_split = split[:-1]
+    url = "/".join(new_split)
+    return url
 
 
 def from_json(filename) -> object:

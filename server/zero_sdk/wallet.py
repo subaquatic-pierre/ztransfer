@@ -7,7 +7,7 @@ from server.zero_sdk.utils import hash_string
 from server.zero_sdk.sign import sign_payload
 from server.zero_sdk.utils import (
     get_home_path,
-    network_url_from_dns_path,
+    network_url_from_config,
     from_json,
     from_yaml,
 )
@@ -21,7 +21,7 @@ from server.zero_sdk.const import (
 
 default_wallet = {}
 default_network = {}
-network_url = BASE_URL
+network_url = ""
 
 try:
     default_wallet = from_json(f"{get_home_path()}/.zcn/wallet.json")
@@ -32,6 +32,12 @@ try:
     default_network = from_yaml(f"{get_home_path()}/.zcn/config.yaml")
 except:
     print("Defualt network not loaded")
+
+try:
+    url = network_url_from_config(default_network)
+except:
+    print("Default network not loaded")
+    url = BASE_URL
 
 
 class Wallet:
