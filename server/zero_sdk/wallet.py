@@ -87,7 +87,8 @@ class Wallet:
             raise Exception(f"{error_message} - Message: {res.text}")
 
     def _init_wallet(self):
-        print("Initialize the wallet if the wallet is not valid")
+        # Implement wallet init
+        pass
 
     def _validate_wallet(method):
         """Initialize wallet
@@ -98,11 +99,14 @@ class Wallet:
         def wrapper(self, *args, **kwargs):
             # Check valid valid configutaion
             try:
-                assert hasattr(self, "client_id")
-            except Exception:
-                raise Exception("Wallet as incorrect configutaion settings")
+                assert self.client_id is not None
 
-            if self.initialized == True:
+            except Exception:
+                pass
+                # raise Exception("Wallet has incorrect configutaion settings")
+                # self._init_wallet()
+
+            if self.client_id is not None:
                 return method(self, *args, **kwargs)
             else:
                 self._init_wallet()
