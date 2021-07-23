@@ -1,8 +1,8 @@
 from sys import stdout
 import requests
 import subprocess
-from server.zero_sdk.wallet_data import wallet_data
-from server.zero_sdk.utils import get_project_root
+from zero_sdk.wallet_data import wallet_data
+from zero_sdk.utils import get_project_root
 
 root_dir = get_project_root()
 
