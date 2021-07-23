@@ -1,4 +1,4 @@
-from zero_sdk.wallet_data import wallet_data
+from server.zero_sdk.wallet_data import wallet_data
 
 MAIN_ALLOCATION_ID = "6d2cec047e99f5e87d3c1fe82020158dc09fd8d9173fe3875e54b2f9c6a8b0f7"
 ALT_ALLOCATION_ID = "2069f57d3326a5d31e3af110aef61b9f5981f1c70a1508ec3c8246b0bf3ba126"

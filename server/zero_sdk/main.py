@@ -1,10 +1,10 @@
 import requests
 from time import time
 
-from zero_sdk.utils import pprint, hash_string
-from zero_sdk.network_data import network_data
-from zero_sdk.sign import sign_payload
-from zero_sdk.const import (
+from server.zero_sdk.utils import pprint, hash_string
+from server.zero_sdk.network_data import network_data
+from server.zero_sdk.sign import sign_payload
+from server.zero_sdk.const import (
     MAIN_ALLOCATION_ID,
     TO_CLIENT_ID,
     BASE_URL,
@@ -12,12 +12,6 @@ from zero_sdk.const import (
     WALLET_PRIVATE_KEY,
     WALLET_ID,
 )
-
-
-def get_network_info():
-    url = f"{BASE_URL}/dns/network"
-    res = requests.get(url)
-    pprint(res)
 
 
 def restore_wallet():
@@ -46,47 +40,4 @@ def restore_wallet():
         print(res.text)
 
 
-def get_balance():
-    url = f"{BASE_URL}/sharder01/v1/client/get/balance?client_id={WALLET_ID}"
-    res = requests.get(url)
-    pprint(res)
 
-
-def add_tokens():
-    url = f"{BASE_URL}/miner01/v1/transaction/put"
-    headers = {"Content-Type": "application/json; charset=utf-8"}
-
-    # Creation date
-    creation_date = int(time())
-
-    # Transaction data hash
-    transaction_data_string = '{"name":"pour","input":{},"name":null}'
-    transaction_data_hash = hash_string(transaction_data_string)
-
-    # Main hash payload
-    payload_string = f"{creation_date}:{WALLET_ID}:{TO_CLIENT_ID}:10000000000:{transaction_data_hash}"
-    hashed_payload = hash_string(payload_string)
-
-    signature = sign_payload(WALLET_PRIVATE_KEY, hashed_payload)
-    if signature == False:
-        raise Exception("There was an error signing the transaction")
-
-    # Build raw data
-    data = {
-        "hash": hashed_payload,
-        "signature": signature,
-        "version": "1.0",
-        "client_id": WALLET_ID,
-        "creation_date": creation_date,
-        "to_client_id": TO_CLIENT_ID,
-        "transaction_data": transaction_data_string,
-        "transaction_fee": 0,
-        "transaction_type": 1000,
-        "transaction_value": 10000000000,
-        "txn_output_hash": "",
-        "public_key": WALLET_PUBLIC_KEY,
-    }
-
-    res = requests.post(url, json=data, headers=headers)
-    print(res.text)
-    return res

@@ -1,4 +1,5 @@
 import json
+import yaml
 from pathlib import Path
 from hashlib import sha3_256
 
@@ -22,4 +23,29 @@ def get_home_path():
 
 def network_url_from_dns_path(dns_path: str) -> str:
     dns_path.split("/")
-    return dns_path[:-1].join()
+    return dns_path[:-1].join("")
+
+
+def from_json(filename) -> object:
+    data = None
+    with open(f"{get_home_path()}/.zcn/wallet.json", "r") as f:
+        data = json.load(f)
+
+    verified_data = verify_data(data)
+    return verified_data
+
+
+def from_yaml(filename) -> object:
+    data = None
+    with open(f"{get_home_path()}/.zcn/config.yaml", "r") as f:
+        data = yaml.safe_load(f)
+
+    verified_data = verify_data(data)
+    return verified_data
+
+
+def verify_data(data):
+    if data == None:
+        raise Exception("No data loaded")
+    else:
+        return data

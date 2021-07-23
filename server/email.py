@@ -1,4 +1,3 @@
-from re import A, I
 import smtplib
 from server.config import Config
 from email.mime.multipart import MIMEMultipart

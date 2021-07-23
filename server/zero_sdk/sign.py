@@ -1,8 +1,7 @@
-from sys import stdout
 import requests
 import subprocess
-from zero_sdk.wallet_data import wallet_data
-from zero_sdk.utils import get_project_root
+from server.zero_sdk.wallet_data import wallet_data
+from server.zero_sdk.utils import get_project_root
 
 root_dir = get_project_root()
 
@@ -22,7 +21,10 @@ def sign_payload(private_key, hash_payload):
 
     sig, err = command.communicate()
     if err == None:
-        return sig.decode()
+        if len(sig.decode()) != 64:
+            return False
+        else:
+            return sig.decode()
     else:
         return False
 
