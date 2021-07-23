@@ -18,6 +18,18 @@ with open(f"{get_home_path()}/.zcn/wallet.json", "r") as f:
         network_url = network_url_from_dns_path(default_network["block_worker"])
 
 
+def wallet_init(method):
+    def wrapper(cls, *args, **kwargs):
+        if cls.initialized == True:
+            return method(cls, *args, **kwargs)
+        else:
+            raise Exception(
+                "Wallet is not initialized, call 'create_wallet, init_wallet or recover_wallet' methods to configure wallet"
+            )
+
+    return wrapper
+
+
 class Wallet:
     def __init__(self, config=default_wallet, network_url=network_url, default=True):
         if default == True:
@@ -29,13 +41,16 @@ class Wallet:
             self.version = config["version"]
             self.date_created = config["date_created"]
             self.network_url = network_url
+            self.initialized = True
 
+    @wallet_init
     def get_network_info(self):
         url = f"{self.network_url}/dns/network"
         res = requests.get(url)
         error_message = f"An error occured fetching network info: {res.text}"
         self.return_response(res, error_message)
 
+    @wallet_init
     def get_balance(self):
         url = f"{self.network_url}/sharder01/v1/client/get/balance?client_id={self.client_id}"
         res = requests.get(url)
