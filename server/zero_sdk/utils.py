@@ -30,7 +30,7 @@ def network_url_from_config(network_config) -> str:
 
 def from_json(filename) -> object:
     data = None
-    with open(f"{get_home_path()}/.zcn/wallet.json", "r") as f:
+    with open(filename, "r") as f:
         data = json.load(f)
 
     verified_data = verify_data(data)
@@ -39,7 +39,7 @@ def from_json(filename) -> object:
 
 def from_yaml(filename) -> object:
     data = None
-    with open(f"{get_home_path()}/.zcn/config.yaml", "r") as f:
+    with open(filename, "r") as f:
         data = yaml.safe_load(f)
 
     verified_data = verify_data(data)

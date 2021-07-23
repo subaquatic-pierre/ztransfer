@@ -1,6 +1,5 @@
 import requests
 import json
-import yaml
 from time import time
 
 from server.zero_sdk.utils import hash_string
@@ -34,15 +33,40 @@ except:
     print("Defualt network not loaded")
 
 try:
-    url = network_url_from_config(default_network)
+    network_url = network_url_from_config(default_network)
 except:
     print("Default network not loaded")
-    url = BASE_URL
+    network_url = BASE_URL
 
 
 class Wallet:
-    def __init__(self, config=default_wallet, network_url=network_url, default=True):
-        if default == True:
+    def __init__(self, default_config=True, config=None, network_url=None):
+        self.initialized = False
+
+        # Raise error if no config object passed in and not default config
+        if default_config == False and config == None:
+            raise Exception(
+                "If default config not selected a config object needs to passed to constructor"
+            )
+
+        # Set custom config
+        if default_config == False:
+            self.initialized = True
+            self.client_id = config.get("client_id")
+            self.client_key = config.get("client_key")
+            self.public_key = config.get("client_id")
+            self.private_key = config.get("client_id")
+            self.mnemonics = config.get("mnemonics")
+            self.version = config.get("version")
+            self.date_created = config.get("date_created")
+            self.network_url = network_url
+
+        # Set default config
+        if default_config == True:
+            config = default_wallet
+            network_url = network_url_from_config(default_network)
+
+            self.initialized = True
             self.client_id = config["client_id"]
             self.client_key = config["client_key"]
             self.public_key = config["keys"][0]["public_key"]
@@ -51,36 +75,44 @@ class Wallet:
             self.version = config["version"]
             self.date_created = config["date_created"]
             self.network_url = network_url
-            self.initialized = True
 
     def _validate_response(self, res, error_message) -> object:
         """Validate network response
         Check network response status on each request
         Return error message if status code is not 200
         """
-
         if res.status_code == 200:
             return res.json()
         else:
             raise Exception(f"{error_message} - Message: {res.text}")
 
-    def _init_wallet(method):
+    def _init_wallet(self):
+        print("Initialize the wallet if the wallet is not valid")
+
+    def _validate_wallet(method):
         """Initialize wallet
         Check the wallet is initialized before every API request
         If wallet is not initialized, create a new wallet.
         """
 
         def wrapper(self, *args, **kwargs):
+            # Check valid valid configutaion
+            try:
+                assert hasattr(self, "client_id")
+            except Exception:
+                raise Exception("Wallet as incorrect configutaion settings")
+
             if self.initialized == True:
                 return method(self, *args, **kwargs)
             else:
+                self._init_wallet()
                 raise Exception(
                     "Wallet is not initialized, call 'create_wallet, init_wallet or recover_wallet' methods to configure wallet"
                 )
 
         return wrapper
 
-    @_init_wallet
+    @_validate_wallet
     def get_network_info(self) -> object:
         url = f"{self.network_url}/dns/network"
         res = requests.get(url)
@@ -88,7 +120,7 @@ class Wallet:
         res = self._validate_response(res, error_message)
         return res
 
-    @_init_wallet
+    @_validate_wallet
     def get_balance(self) -> int:
         """Get Wallet balance
         Return float value of tokens
@@ -99,7 +131,7 @@ class Wallet:
         res = self._validate_response(res, error_message)
         return int(res["balance"])
 
-    @_init_wallet
+    @_validate_wallet
     def add_tokens(self, amount=1) -> object:
         url = f"{self.network_url}/miner01/v1/transaction/put"
         headers = {"Content-Type": "application/json; charset=utf-8"}
@@ -142,7 +174,7 @@ class Wallet:
 
     def __repr__(self):
         return (
-            f"Wallet(config={default_wallet}, network_url=String, default=True/False)"
+            f"Wallet(default_config=True, config={default_wallet}, network_url=String)"
         )
 
     def __str__(self):
