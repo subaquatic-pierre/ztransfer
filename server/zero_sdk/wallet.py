@@ -3,8 +3,8 @@ import json
 from time import time
 
 from server.zero_sdk.utils import hash_string
-from server.zero_sdk.sign import sign_payload, heroku_sign
-from server.zero_sdk.network import Network
+from server.zero_sdk.sign import sign_payload
+from server.zero_sdk.network import Network, ConnectionBase
 from server.zero_sdk.utils import (
     get_home_path,
     from_json,
@@ -32,7 +32,7 @@ except:
     print("Defualt network not loaded")
 
 
-class Wallet:
+class Wallet(ConnectionBase):
     def __init__(self, default_config=True, config=None, network=None):
         # Raise error if no config object passed in and not default config
         if default_config == False and config == None:
@@ -64,16 +64,6 @@ class Wallet:
             self.version = config.get("version")
             self.date_created = config.get("date_created")
             self.network = network
-
-    def _validate_response(self, res, error_message) -> object:
-        """Validate network response
-        Check network response status on each request
-        Return error message if status code is not 200
-        """
-        if res.status_code == 200:
-            return res.json()
-        else:
-            raise Exception(f"{error_message} - Message: {res.text}")
 
     def _init_wallet(self):
         # Implement wallet init
@@ -116,6 +106,9 @@ class Wallet:
         balance = int(res["balance"])
         return balance
 
+    def sign(self, payload):
+        return sign_payload(self.private_key, payload)
+
     @_validate_wallet
     def add_tokens(self, amount=1) -> object:
         url = f"{self.network.url}/miner01/v1/transaction/put"
@@ -133,7 +126,7 @@ class Wallet:
         hashed_payload = hash_string(payload_string)
 
         # signature = heroku_sign(hashed_payload)
-        signature = sign_payload(self.private_key, hashed_payload)
+        signature = self.sign(self.private_key, hashed_payload)
         if signature == False:
             raise Exception("There was an error signing the transaction")
 
