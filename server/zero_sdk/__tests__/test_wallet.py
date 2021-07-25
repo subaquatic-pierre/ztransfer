@@ -28,10 +28,5 @@ assert isinstance(balance, int), "Balance is not integer"
 
 # Test add_tokens
 wallet = Wallet()
-old_balance = wallet.get_balance()
-wallet.add_tokens()
-# new_balance = wallet.get_balance()
-# assert new_balance == balance + (
-#     1 * 100000000
-# ), "add_token method did not add to wallet balance"
+assert wallet.add_tokens(), "add_token method did not add to wallet balance"
 # --------------

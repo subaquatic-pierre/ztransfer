@@ -1,11 +1,9 @@
-import requests
-from time import time
+from server.zero_sdk.wallet import Wallet
+from server.zero_sdk.allocation import Allocation
+from server.zero_sdk.const import MAIN_ALLOCATION_ID
 
-from server.zero_sdk.utils import pprint, hash_string
-from server.zero_sdk.network_data import network_data
-from server.zero_sdk.sign import sign_payload
-from server.zero_sdk.const import (
-    MAIN_ALLOCATION_ID,
-    TO_CLIENT_ID,
-    BASE_URL,
-)
+wallet = Wallet()
+print(wallet.network)
+main_aloc = Allocation(MAIN_ALLOCATION_ID, wallet)
+
+print(main_aloc)

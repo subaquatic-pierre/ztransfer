@@ -113,7 +113,8 @@ class Wallet:
         res = requests.get(url)
         error_message = f"An error occured getting wallet balance"
         res = self._validate_response(res, error_message)
-        return int(res["balance"])
+        balance = int(res["balance"])
+        return balance
 
     @_validate_wallet
     def add_tokens(self, amount=1) -> object:
@@ -135,8 +136,6 @@ class Wallet:
         signature = sign_payload(self.private_key, hashed_payload)
         if signature == False:
             raise Exception("There was an error signing the transaction")
-
-        print(signature)
 
         # Build raw data
         data = {
@@ -165,8 +164,7 @@ class Wallet:
         results = []
         for miner in miners:
             # Build URL
-            split = miner.split("/")
-            miner_id = split[len(split) - 1]
+            miner_id = miner["id"]
             url = f"{self.network.url}/{miner_id}/v1/client/put"
 
             # Build Data
@@ -197,6 +195,7 @@ class Wallet:
                 "mnemonics": self.mnemonics,
                 "date_created": self.date_created,
                 "version": self.version,
+                "network_url": self.network.url,
             },
             indent=4,
         )
