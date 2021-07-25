@@ -4,9 +4,9 @@ from time import time
 
 from server.zero_sdk.utils import hash_string
 from server.zero_sdk.sign import sign_payload
+from server.zero_sdk.network import Network
 from server.zero_sdk.utils import (
     get_home_path,
-    network_url_from_config,
     from_json,
     from_yaml,
 )
@@ -14,67 +14,45 @@ from server.zero_sdk.utils import (
 from server.zero_sdk.const import (
     MAIN_ALLOCATION_ID,
     TO_CLIENT_ID,
-    BASE_URL,
 )
 
 
-default_wallet = {}
-default_network = {}
-network_url = ""
+default_wallet_config = {}
+default_network_config = {}
+network = ""
 
 try:
-    default_wallet = from_json(f"{get_home_path()}/.zcn/wallet.json")
+    default_wallet_config = from_json(f"{get_home_path()}/.zcn/wallet.json")
 except:
     print("Default wallet not loaded")
 
 try:
-    default_network = from_yaml(f"{get_home_path()}/.zcn/config.yaml")
+    default_network_config = from_yaml(f"{get_home_path()}/.zcn/config.yaml")
 except:
     print("Defualt network not loaded")
 
-try:
-    network_url = network_url_from_config(default_network)
-except:
-    print("Default network not loaded")
-    network_url = BASE_URL
-
 
 class Wallet:
-    def __init__(self, default_config=True, config=None, network_url=None):
-        self.initialized = False
-
+    def __init__(self, default_config=True, config=None, network=None):
         # Raise error if no config object passed in and not default config
         if default_config == False and config == None:
             raise Exception(
                 "If default config not selected a config object needs to passed to constructor"
             )
-
-        # Set custom config
-        if default_config == False:
-            self.initialized = True
-            self.client_id = config.get("client_id")
-            self.client_key = config.get("client_key")
-            self.public_key = config.get("client_id")
-            self.private_key = config.get("client_id")
-            self.mnemonics = config.get("mnemonics")
-            self.version = config.get("version")
-            self.date_created = config.get("date_created")
-            self.network_url = network_url
-
         # Set default config
         if default_config == True:
-            config = default_wallet
-            network_url = network_url_from_config(default_network)
+            config = default_wallet_config
+            network = Network(default_network_config, TO_CLIENT_ID)
 
-            self.initialized = True
-            self.client_id = config["client_id"]
-            self.client_key = config["client_key"]
-            self.public_key = config["keys"][0]["public_key"]
-            self.private_key = config["keys"][0]["private_key"]
-            self.mnemonics = config["mnemonics"]
-            self.version = config["version"]
-            self.date_created = config["date_created"]
-            self.network_url = network_url
+        # Set custom config
+        self.client_id = config.get("client_id")
+        self.client_key = config.get("client_key")
+        self.public_key = config.get("client_id")
+        self.private_key = config.get("client_id")
+        self.mnemonics = config.get("mnemonics")
+        self.version = config.get("version")
+        self.date_created = config.get("date_created")
+        self.network = network
 
     def _validate_response(self, res, error_message) -> object:
         """Validate network response
@@ -97,15 +75,6 @@ class Wallet:
         """
 
         def wrapper(self, *args, **kwargs):
-            # Check valid valid configutaion
-            try:
-                assert self.client_id is not None
-
-            except Exception:
-                pass
-                # raise Exception("Wallet has incorrect configutaion settings")
-                # self._init_wallet()
-
             if self.client_id is not None:
                 return method(self, *args, **kwargs)
             else:
@@ -118,7 +87,7 @@ class Wallet:
 
     @_validate_wallet
     def get_network_info(self) -> object:
-        url = f"{self.network_url}/dns/network"
+        url = f"{self.network.url}/dns/network"
         res = requests.get(url)
         error_message = f"An error occured fetching network info"
         res = self._validate_response(res, error_message)
@@ -129,7 +98,7 @@ class Wallet:
         """Get Wallet balance
         Return float value of tokens
         """
-        url = f"{self.network_url}/sharder01/v1/client/get/balance?client_id={self.client_id}"
+        url = f"{self.network.url}/sharder01/v1/client/get/balance?client_id={self.client_id}"
         res = requests.get(url)
         error_message = f"An error occured getting wallet balance"
         res = self._validate_response(res, error_message)
@@ -137,7 +106,7 @@ class Wallet:
 
     @_validate_wallet
     def add_tokens(self, amount=1) -> object:
-        url = f"{self.network_url}/miner01/v1/transaction/put"
+        url = f"{self.network.url}/miner01/v1/transaction/put"
         headers = {"Content-Type": "application/json; charset=utf-8"}
 
         # Creation date
@@ -162,7 +131,7 @@ class Wallet:
             "version": "1.0",
             "client_id": self.client_id,
             "creation_date": creation_date,
-            "to_client_id": TO_CLIENT_ID,
+            "to_client_id": self.network.remote_client_id,
             "transaction_data": transaction_data_string,
             "transaction_fee": 0,
             "transaction_type": 1000,
@@ -174,12 +143,36 @@ class Wallet:
         res = requests.post(url, json=data, headers=headers)
         error_message = "An error occurred adding tokens to wallet"
         res = self._validate_response(res, error_message)
+
         return res
 
+    def restore_wallet(self):
+        miners = self.network.miners
+        results = []
+        for miner in miners:
+            # Build URL
+            split = miner.split("/")
+            miner_id = split[len(split) - 1]
+            url = f"{self.network.url}/{miner_id}/v1/client/put"
+
+            # Build Data
+            headers = {"Accept": "application/json", "Content-Type": "application/json"}
+            data = {
+                "id": self.client_id,
+                "version": None,
+                "creation_date": None,
+                "public_key": self.public_key,
+            }
+
+            # Make request
+            res = requests.put(url, json=data, headers=headers)
+            results.append(res)
+
+        for res in results:
+            print(res.text)
+
     def __repr__(self):
-        return (
-            f"Wallet(default_config=True, config={default_wallet}, network_url=String)"
-        )
+        return f"Wallet(default_config=True, config={default_wallet_config}, network=Network({default_network_config}))"
 
     def __str__(self):
         return json.dumps(
