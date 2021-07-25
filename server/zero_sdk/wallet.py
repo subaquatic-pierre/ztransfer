@@ -3,7 +3,7 @@ import json
 from time import time
 
 from server.zero_sdk.utils import hash_string
-from server.zero_sdk.sign import sign_payload
+from server.zero_sdk.sign import sign_payload, heroku_sign
 from server.zero_sdk.network import Network
 from server.zero_sdk.utils import (
     get_home_path,
@@ -27,7 +27,7 @@ except:
     print("Default wallet not loaded")
 
 try:
-    default_network_config = from_yaml(f"{get_home_path()}/.zcn/config.yaml")
+    default_network_config = from_yaml(f"{get_home_path()}/.zcn/network_config.json")
 except:
     print("Defualt network not loaded")
 
@@ -42,17 +42,28 @@ class Wallet:
         # Set default config
         if default_config == True:
             config = default_wallet_config
-            network = Network(default_network_config, TO_CLIENT_ID)
+            network = Network(default_network_config)
 
-        # Set custom config
-        self.client_id = config.get("client_id")
-        self.client_key = config.get("client_key")
-        self.public_key = config.get("client_id")
-        self.private_key = config.get("client_id")
-        self.mnemonics = config.get("mnemonics")
-        self.version = config.get("version")
-        self.date_created = config.get("date_created")
-        self.network = network
+            # Set custom config
+            self.client_id = config.get("client_id")
+            self.client_key = config.get("client_key")
+            self.public_key = config.get("keys")[0]["public_key"]
+            self.private_key = config.get("keys")[0]["private_key"]
+            self.mnemonics = config.get("mnemonics")
+            self.version = config.get("version")
+            self.date_created = config.get("date_created")
+            self.network = network
+
+        else:
+            # Set custom config
+            self.client_id = config.get("client_id")
+            self.client_key = config.get("client_key")
+            self.public_key = config.get("public_key")
+            self.private_key = config.get("private_key")
+            self.mnemonics = config.get("mnemonics")
+            self.version = config.get("version")
+            self.date_created = config.get("date_created")
+            self.network = network
 
     def _validate_response(self, res, error_message) -> object:
         """Validate network response
@@ -117,12 +128,15 @@ class Wallet:
         transaction_data_hash = hash_string(transaction_data_string)
 
         # Main hash payload
-        payload_string = f"{creation_date}:{self.client_id}:{TO_CLIENT_ID}:10000000000:{transaction_data_hash}"
+        payload_string = f"{creation_date}:{self.client_id}:{self.network.remote_client_id}:10000000000:{transaction_data_hash}"
         hashed_payload = hash_string(payload_string)
 
+        # signature = heroku_sign(hashed_payload)
         signature = sign_payload(self.private_key, hashed_payload)
         if signature == False:
             raise Exception("There was an error signing the transaction")
+
+        print(signature)
 
         # Build raw data
         data = {

@@ -6,7 +6,7 @@ root_dir = get_project_root()
 
 PUBLIC_KEY = "8aab74ef0f6cdb3a6f170001d3383ea6a0043a2df9e3094351cdc4dc14ec52093370860c4ff730c7199afd64b2451b64cc4772ce4e66ee51f0d396e1a0fc5d02"
 PASSPHRASE = "0chain-client-split-key"
-MNEMONIC = "something here"
+MNEMONIC = "crunch sheriff find bicycle demand review negative urge approve boy autumn panther bench know shock aerobic satoshi stomach roof stove brother eight core harbor"
 
 
 def sign_payload(private_key, hash_payload):
