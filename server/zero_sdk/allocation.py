@@ -28,6 +28,34 @@ class Allocation(ConnectionBase):
     def get_blobbers(self):
         return self.blobbers
 
+    def get_file_path(self, blobber, remote_path, headers):
+        url = (
+            f'{blobber["url"]}/v1/file/referencepath/{self.id}?paths=["{remote_path}"]'
+        )
+        res = requests.get(url, headers=headers)
+        return res.json()
+
+    def download_file(self, filepath):
+        headers = {
+            "X-App-Client-Id": self.wallet.client_id,
+            "X-App-Client-Key": self.wallet.public_key,
+        }
+
+        results = []
+        read_markers = []
+
+        for blobber in self.blobbers:
+            url = f"{blobber['url']}/v1/file/meta/{self.id}"
+            res = requests.post(url, data={"path": filepath}, headers=headers)
+            results.append(res)
+
+            for sharder in self.wallet.network.sharders:
+                url = f"{sharder}/v1/screst/6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d7/latestreadmarker?client={self.wallet.client_id}&blobber={blobber['id']}"
+                res = requests.get(url)
+                read_markers.append(res)
+
+        return (results, read_markers)
+
     def _hash_file(self, filename):
         hashed_file = None
         with open(filename, "r") as file:
@@ -73,7 +101,7 @@ class Allocation(ConnectionBase):
         )
 
         file_meta = self._build_file_meta(
-            upload_result, hashed_file, file_size, filename
+            upload_result[0].json(), hashed_file, file_size, filename
         )
 
         allocation_info = self.get_file_path(
@@ -94,7 +122,7 @@ class Allocation(ConnectionBase):
             file_size,
         )
 
-        print(res)
+        print(res.text)
 
     def _upload_shards(
         self,
@@ -121,13 +149,13 @@ class Allocation(ConnectionBase):
 
         results = []
 
-        # for blobber in self.blobbers:
-        url = f"{blobber['url']}/v1/file/upload/{self.id}"
-        res = requests.post(url=url, data=data, files=files, headers=headers)
-        results.append(res)
+        for blobber in self.blobbers:
+            url = f"{blobber['url']}/v1/file/upload/{self.id}"
+            res = requests.post(url=url, data=data, files=files, headers=headers)
+            results.append(res)
 
-        return res.json()
-        # return results[0].json()
+        # return res.json()
+        return results
 
     def _commit(
         self,
@@ -136,13 +164,12 @@ class Allocation(ConnectionBase):
         new_allocation_info,
         file_size,
     ):
+        blobber = self.blobbers[0]
+        url = f"{blobber['url']}/v1/connection/commit/{self.id}"
         timestamp = str(int(time()))
         new_allocation_root = hash_string(
             f"{new_allocation_info['meta_data']['hash']}:{timestamp}"
         )
-
-        blobber = self.blobbers[0]
-
         signature_payload = hash_string(
             f"{new_allocation_root}:{prev_allocation_root}:{self.id}:{blobber['id']}:{self.wallet.client_id}:{file_size}:{timestamp}"
         )
@@ -151,62 +178,41 @@ class Allocation(ConnectionBase):
         results = []
 
         # for blobber in self.blobbers:
-        # data = {
-        #     "connection_id": connection_id,
-        #     "write_marker": json.dumps(
-        #         {
-        #             "allocation_root": new_allocation_root,
-        #             "prev_allocation_root": prev_allocation_root,
-        #             "allocation_id": self.id,
-        #             "size": file_size,
-        #             "blobber_id": blobber["id"],
-        #             "timestamp": timestamp,
-        #             "client_id": self.wallet.client_id,
-        #             "signature": signature,
-        #         }
-        #     ),
-        # }
-
-        data = json.dumps(
-            {
-                "allocation_root": new_allocation_root,
-                "prev_allocation_root": prev_allocation_root,
-                "allocation_id": self.id,
-                "size": file_size,
-                "blobber_id": blobber["id"],
-                "timestamp": timestamp,
-                "client_id": self.wallet.client_id,
-                "signature": signature,
+        data = MultipartEncoder(
+            fields={
+                # "connection_id": connection_id,
+                "write_marker": json.dumps(
+                    {
+                        "allocation_root": new_allocation_root,
+                        "prev_allocation_root": prev_allocation_root,
+                        "allocation_id": self.id,
+                        "size": file_size,
+                        "blobber_id": blobber["id"],
+                        "timestamp": timestamp,
+                        "client_id": self.wallet.client_id,
+                        "signature": signature,
+                    }
+                ),
             }
-        )
-
-        url = f"{blobber['url']}/v1/connection/commit/{self.id}"
-
-        mp_encoder = MultipartEncoder(
-            fields={"connection_id": connection_id, "write_marker": json.dumps(data)}
         )
 
         headers = {
             "X-App-Client-Id": self.wallet.client_id,
             "X-App-Client-Key": self.wallet.public_key,
             "Connection": "Keep-Alive",
-            # "Cache-Control": "no-cache",
+            "Cache-Control": "no-cache",
             "Transfer-Encoding": "chunked",
-            "Content-Type": mp_encoder.content_type,
+            "Content-Type": data.content_type,
         }
 
-        req = requests.Request(url=url, data=mp_encoder, headers=headers)
-        prep = req.prepare()
-        print(prep.body)
+        # req = requests.Request(url=url, data=data, headers=headers)
 
-        # res = requests.post(
-        #     url=url,
-        #     data=mp_encoder,
-        #     headers=headers,
-        # )
-        # print(res.text)
-
-        # return res
+        res = requests.post(
+            url=url,
+            data=data,
+            headers=headers,
+        )
+        return res
 
     def _build_file_meta(self, upload_result, hashed_file, file_size, filename):
         meta_data = {
@@ -231,13 +237,6 @@ class Allocation(ConnectionBase):
         meta_data["path_hash"] = hash_string(f"{self.id}:{meta_data['path']}")
 
         return {"meta_data": meta_data}
-
-    def get_file_path(self, blobber, remote_path, headers):
-        url = (
-            f'{blobber["url"]}/v1/file/referencepath/{self.id}?paths=["{remote_path}"]'
-        )
-        res = requests.get(url, headers=headers)
-        return res.json()
 
     def __str__(self) -> str:
         return json.dumps(
