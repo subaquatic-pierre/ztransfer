@@ -3,8 +3,8 @@ from time import time
 import requests
 import os
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from server.zero_sdk.network import ConnectionBase
-from server.zero_sdk.utils import hash_string
+from network import ConnectionBase
+from utils import hash_string, pprint
 from random import randint
 from reedsolo import RSCodec
 
@@ -32,30 +32,30 @@ class Allocation(ConnectionBase):
         res = requests.get(url, headers=headers)
         return res.json()
 
-    def download_file(self, filepath):
-        headers = {
-            "X-App-Client-Id": self.wallet.client_id,
-            "X-App-Client-Key": self.wallet.public_key,
-        }
-
+    def download_file(self, remotepath, localpath):
         results = []
 
         for blobber in self.blobbers:
+            headers = {
+                "X-App-Client-Id": self.wallet.client_id,
+                "X-App-Client-Key": self.wallet.public_key,
+            }
+            # Get file info from each blobber
             url = f"{blobber['url']}/v1/file/meta/{self.id}"
-            res = requests.post(url, data={"path": filepath}, headers=headers)
+            res = requests.post(url, data={"path": remotepath}, headers=headers)
             file_info = res.json()
 
             if res.status_code == 200:
-
                 # Get latest read marker
                 for sharder in self.wallet.network.sharders:
                     url = f"{sharder}/v1/screst/6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d7/latestreadmarker?client={self.wallet.client_id}&blobber={blobber['id']}"
                     read_marker_res = requests.get(url)
 
+                # Build info from read marker and blobber file info
                 old_marker = read_marker_res.json()
-                signature_payload = f"{old_marker['allocation_id']}:{old_marker['blobber_id']}:{old_marker['client_id']}:{old_marker['client_public_key']}:{old_marker['owner_id']}:{old_marker['counter']}:{old_marker['timestamp']}"
-                hashed_signature_payload = hash_string(signature_payload)
-                signature = self.wallet.sign(hashed_signature_payload)
+                path_hash = (
+                    file_info.get("path_hash") if file_info.get("path_hash") else ""
+                )
                 num_blocks = (
                     file_info.get("num_of_blocks")
                     if file_info.get("num_of_blocks")
@@ -66,52 +66,57 @@ class Allocation(ConnectionBase):
                     if old_marker.get("counter")
                     else num_blocks
                 )
-                path_hash = (
-                    file_info.get("path_hash") if file_info.get("path_hash") else ""
-                )
+                timestamp = int(time())
 
-                read_marker = {
-                    "client_id": self.wallet.client_id,
-                    "client_public_key": self.wallet.public_key,
-                    "blobber_id": blobber["id"],
-                    "allocation_id": self.id,
-                    "owner_id": self.wallet.client_id,
-                    "timestamp": int(time()),
-                    "counter": counter,
-                    "signature": signature,
-                }
+                # Build signature
+                signature_payload = f"{self.id}:{blobber['id']}:{self.wallet.client_id}:{self.wallet.public_key}:{old_marker['owner_id']}:{counter}:{timestamp}"
+                hashed_signature_payload = hash_string(signature_payload)
+                signature = self.wallet.sign(hashed_signature_payload)
 
-                # Download the file
-                url = f"{blobber['url']}/v1/file/download/{self.id}"
-                data = MultipartEncoder(
-                    fields={
+                # Set request payload
+                payload = MultipartEncoder(
+                    {
                         "path_hash": path_hash,
                         "block_num": "1",
                         "num_blocks": str(num_blocks),
-                        "read_marker": json.dumps(read_marker),
+                        "read_marker": json.dumps(
+                            {
+                                "client_id": self.wallet.client_id,
+                                "client_public_key": self.wallet.public_key,
+                                "blobber_id": blobber["id"],
+                                "allocation_id": self.id,
+                                "owner_id": self.wallet.client_id,
+                                "timestamp": timestamp,
+                                "counter": counter,
+                                "signature": signature,
+                            }
+                        ),
                     }
                 )
-                headers["Content-Type"] = data.content_type
 
-                res = requests.post(url, data=data, headers=headers)
-                req = requests.Request(
-                    method="POST", url=url, data=data, headers=headers
-                )
-                print(req.prepare().body)
-                results.append(res)
+                # Set request headers
+                headers["Content-Type"] = payload.content_type
+
+                # Download the file
+                url = f"{blobber['url']}/v1/file/download/{self.id}"
+                res = requests.request("POST", url, data=payload, headers=headers)
+
+                results.append(res.content)
+
+            # Erasure encode results
+
+            # Write file to localpath
 
         return results
 
     def upload_file(self, filepath):
-        blobber = self.blobbers[0]
-
         split = filepath.split("/")
         filename = split.pop()
 
         file_size = os.path.getsize(filepath)
         hashed_file = self._hash_file(filepath)
         file_shards = self._shard_file(filepath)
-        # file_shards = open(f'{get_home_path()}/.zcn/uploads/TOPS.txt')
+        # file_shards = open(filepath, "rb")
 
         hashed_allocation_id = hash_string(self.id)
         signature = self.wallet.sign(hashed_allocation_id)
@@ -122,95 +127,120 @@ class Allocation(ConnectionBase):
             "X-App-Client-Key": self.wallet.public_key,
         }
 
-        connection_id = str(randint(100000000, 999999999))
-
         upload_result = self._upload_shards(
-            file_shards,
-            filename,
-            file_size,
-            hashed_file,
-            upload_headers,
-            connection_id,
+            file_shards, filename, file_size, hashed_file, upload_headers, filepath
         )
 
-        file_meta = self._build_file_meta(
-            upload_result[0].json(), hashed_file, file_size, filename
-        )
-
-        allocation_info = self.get_file_path(
-            blobber,
-            remote_path=f"/{filename}",
-            headers=upload_headers,
-        )
-
-        prev_allocation_root = allocation_info["latest_write_marker"]["allocation_root"]
-
-        # Append new file meta to blobber tree
-        allocation_info["list"].append(file_meta)
-
-        res = self._commit(
-            connection_id,
-            prev_allocation_root,
-            allocation_info,
-            file_size,
-        )
-
-        print(res.text)
+        return upload_result
 
     def _upload_shards(
-        self,
-        file_shards,
-        filename,
-        filesize,
-        hashed_file,
-        headers,
-        connection_id,
+        self, file_shards, filename, filesize, hashed_file, headers, filepath
     ):
-        blobber = self.blobbers[0]
-
-        meta = {
-            "connection_id": connection_id,
-            "filename": filename,
-            "filepath": f"/{filename}",
-            "actualHash": hashed_file,
-            "actual_size": filesize,
-        }
-
-        data = {"uploadMeta": json.dumps(meta), "connection_id": connection_id}
-
-        files = {"uploadFile": file_shards}
-
         results = []
 
+        # Upload shards to each blobber
         for blobber in self.blobbers:
             url = f"{blobber['url']}/v1/file/upload/{self.id}"
-            res = requests.post(url=url, data=data, files=files, headers=headers)
-            results.append(res)
 
-        # return res.json()
-        return results
+            # Create connetion ID
+            connection_id = str(randint(100000000, 999999999))
+
+            # Build upload meta
+            payload = {
+                "connection_id": connection_id,
+                "uploadMeta": json.dumps(
+                    {
+                        "attributes": {},
+                        "connection_id": connection_id,
+                        "filename": filename,
+                        "filepath": f"/{filename}",
+                        "actual_hash": "69342c5c39e5ae5f0077aecc32c0f81811fb8193",
+                        "actual_size": filesize,
+                    }
+                ),
+            }
+
+            files = [
+                (
+                    "uploadFile",
+                    (
+                        "current_ec_shard",
+                        open(filepath, "rb"),
+                        "application/octet-stream",
+                    ),
+                )
+            ]
+
+            upload_res = requests.request(
+                "POST", url=url, data=payload, files=files, headers=headers
+            )
+
+            print(upload_res.text)
+
+            # Commit on each blobber upload
+            file_meta = self._build_file_meta(
+                upload_res.json(), hashed_file, filesize, filename
+            )
+
+            # Get blobber referrence path for current blobber
+            blobber_ref_path = self.get_file_path(
+                blobber,
+                remote_path=f"/{filename}",
+                headers=headers,
+            )
+
+            prev_allocation_root = blobber_ref_path["latest_write_marker"][
+                "allocation_root"
+            ]
+
+            # Append new file meta to blobber tree
+            blobber_ref_path["list"].append(file_meta)
+
+            commit_res = self._commit(
+                connection_id,
+                prev_allocation_root=prev_allocation_root,
+                new_blobber_ref_path=blobber_ref_path,
+                filesize=filesize,
+                blobber=blobber,
+            )
+
+        return commit_res
+
+    def _calc_new_allocation_root(self, new_blobber_ref_path, timestamp):
+        hashed_paths = []
+        paths = [path["meta_data"]["path"] for path in new_blobber_ref_path["list"]]
+        for path in paths:
+            hashed_path = hash_string(f"{self.id}:{path}")
+            hashed_paths.append(hashed_path)
+
+        sorted_hashed_paths = sorted(hashed_paths)
+        combined_hashed_paths = ":".join(sorted_hashed_paths)
+        return hash_string(f"{combined_hashed_paths}:{timestamp}")
 
     def _commit(
         self,
         connection_id,
         prev_allocation_root,
-        new_allocation_info,
-        file_size,
+        new_blobber_ref_path,
+        filesize,
+        blobber,
     ):
-        blobber = self.blobbers[0]
+        results = []
+
         url = f"{blobber['url']}/v1/connection/commit/{self.id}"
-        timestamp = str(int(time()))
-        new_allocation_root = hash_string(
-            f"{new_allocation_info['meta_data']['hash']}:{timestamp}"
+        timestamp = int(time())
+
+        # Calculate new allocation root for write marker
+        new_allocation_root = self._calc_new_allocation_root(
+            new_blobber_ref_path, timestamp
         )
+
+        # Sign payload
         signature_payload = hash_string(
-            f"{new_allocation_root}:{prev_allocation_root}:{self.id}:{blobber['id']}:{self.wallet.client_id}:{file_size}:{timestamp}"
+            f"{new_allocation_root}:{prev_allocation_root}:{self.id}:{blobber['id']}:{self.wallet.client_id}:{filesize}:{timestamp}"
         )
         signature = self.wallet.sign(signature_payload)
 
-        results = []
-
-        # for blobber in self.blobbers:
         data = MultipartEncoder(
             fields={
                 "connection_id": connection_id,
@@ -219,7 +249,7 @@ class Allocation(ConnectionBase):
                         "allocation_root": new_allocation_root,
                         "prev_allocation_root": prev_allocation_root,
                         "allocation_id": self.id,
-                        "size": file_size,
+                        "size": filesize,
                         "blobber_id": blobber["id"],
                         "timestamp": timestamp,
                         "client_id": self.wallet.client_id,
@@ -233,19 +263,20 @@ class Allocation(ConnectionBase):
             "X-App-Client-Id": self.wallet.client_id,
             "X-App-Client-Key": self.wallet.public_key,
             "Connection": "Keep-Alive",
-            "Cache-Control": "no-cache",
-            "Transfer-Encoding": "chunked",
+            # "Cache-Control": "no-cache",
+            # "Transfer-Encoding": "chunked",
             "Content-Type": data.content_type,
         }
 
-        # req = requests.Request(url=url, data=data, headers=headers)
-
-        res = requests.post(
+        print(new_allocation_root)
+        commit_res = requests.post(
             url=url,
             data=data,
             headers=headers,
         )
-        return res
+        print(commit_res.text)
+
+        return results
 
     def _build_file_meta(self, upload_result, hashed_file, file_size, filename):
         meta_data = {
