@@ -4,7 +4,7 @@ import requests
 import os
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from server.zero_sdk.network import ConnectionBase
-from server.zero_sdk.utils import get_home_path, hash_string, pprint
+from server.zero_sdk.utils import hash_string
 from random import randint
 from reedsolo import RSCodec
 
@@ -24,9 +24,6 @@ class Allocation(ConnectionBase):
         error_message = f"There was an error getting blobber info"
         valid_res = self._validate_response(res, error_message)
         return valid_res
-
-    def get_blobbers(self):
-        return self.blobbers
 
     def get_file_path(self, blobber, remote_path, headers):
         url = (
@@ -56,16 +53,14 @@ class Allocation(ConnectionBase):
                     read_marker_res = requests.get(url)
 
                 old_marker = read_marker_res.json()
-                signature_payload = hash_string(
-                    f"{old_marker['allocation_id']}:{old_marker['blobber_id']}:{old_marker['client_id']}:{old_marker['client_public_key']}:{old_marker['owner_id']}:{old_marker['counter']}:{old_marker['timestamp']}"
-                )
-                signature = self.wallet.sign(signature_payload)
+                signature_payload = f"{old_marker['allocation_id']}:{old_marker['blobber_id']}:{old_marker['client_id']}:{old_marker['client_public_key']}:{old_marker['owner_id']}:{old_marker['counter']}:{old_marker['timestamp']}"
+                hashed_signature_payload = hash_string(signature_payload)
+                signature = self.wallet.sign(hashed_signature_payload)
                 num_blocks = (
                     file_info.get("num_of_blocks")
                     if file_info.get("num_of_blocks")
                     else 1
                 )
-
                 counter = (
                     old_marker["counter"] + num_blocks
                     if old_marker.get("counter")
@@ -81,8 +76,8 @@ class Allocation(ConnectionBase):
                     "blobber_id": blobber["id"],
                     "allocation_id": self.id,
                     "owner_id": self.wallet.client_id,
-                    "timestamp": str(int(time())),
-                    "counter": str(counter),
+                    "timestamp": int(time()),
+                    "counter": counter,
                     "signature": signature,
                 }
 
@@ -99,22 +94,13 @@ class Allocation(ConnectionBase):
                 headers["Content-Type"] = data.content_type
 
                 res = requests.post(url, data=data, headers=headers)
+                req = requests.Request(
+                    method="POST", url=url, data=data, headers=headers
+                )
+                print(req.prepare().body)
                 results.append(res)
 
         return results
-
-    def _hash_file(self, filename):
-        hashed_file = None
-        with open(filename, "r") as file:
-            hashed_file = hash_string(file.read())
-
-        return hashed_file
-
-    def _shard_file(self, filename):
-        rsc = RSCodec(2)
-        with open(filename) as file:
-            shard = rsc.encode(file.read().encode("utf-8"))
-            return shard
 
     def upload_file(self, filepath):
         blobber = self.blobbers[0]
@@ -284,6 +270,19 @@ class Allocation(ConnectionBase):
         meta_data["path_hash"] = hash_string(f"{self.id}:{meta_data['path']}")
 
         return {"meta_data": meta_data}
+
+    def _hash_file(self, filename):
+        hashed_file = None
+        with open(filename, "r") as file:
+            hashed_file = hash_string(file.read())
+
+        return hashed_file
+
+    def _shard_file(self, filename):
+        rsc = RSCodec(2)
+        with open(filename) as file:
+            shard = rsc.encode(file.read().encode("utf-8"))
+            return shard
 
     def __str__(self) -> str:
         return json.dumps(

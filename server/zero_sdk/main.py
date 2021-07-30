@@ -1,5 +1,4 @@
-import json
-from server.zero_sdk.utils import get_home_path, pprint
+from server.zero_sdk.utils import get_home_path
 from server.zero_sdk.wallet import Wallet
 from server.zero_sdk.allocation import Allocation
 from server.zero_sdk.const import MAIN_ALLOCATION_ID, STORAGE_ADDRESS
