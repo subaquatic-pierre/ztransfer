@@ -42,19 +42,66 @@ class Allocation(ConnectionBase):
         }
 
         results = []
-        read_markers = []
 
         for blobber in self.blobbers:
             url = f"{blobber['url']}/v1/file/meta/{self.id}"
             res = requests.post(url, data={"path": filepath}, headers=headers)
-            results.append(res)
+            file_info = res.json()
 
-            for sharder in self.wallet.network.sharders:
-                url = f"{sharder}/v1/screst/6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d7/latestreadmarker?client={self.wallet.client_id}&blobber={blobber['id']}"
-                res = requests.get(url)
-                read_markers.append(res)
+            if res.status_code == 200:
 
-        return (results, read_markers)
+                # Get latest read marker
+                for sharder in self.wallet.network.sharders:
+                    url = f"{sharder}/v1/screst/6dba10422e368813802877a85039d3985d96760ed844092319743fb3a76712d7/latestreadmarker?client={self.wallet.client_id}&blobber={blobber['id']}"
+                    read_marker_res = requests.get(url)
+
+                old_marker = read_marker_res.json()
+                signature_payload = hash_string(
+                    f"{old_marker['allocation_id']}:{old_marker['blobber_id']}:{old_marker['client_id']}:{old_marker['client_public_key']}:{old_marker['owner_id']}:{old_marker['counter']}:{old_marker['timestamp']}"
+                )
+                signature = self.wallet.sign(signature_payload)
+                num_blocks = (
+                    file_info.get("num_of_blocks")
+                    if file_info.get("num_of_blocks")
+                    else 1
+                )
+
+                counter = (
+                    old_marker["counter"] + num_blocks
+                    if old_marker.get("counter")
+                    else num_blocks
+                )
+                path_hash = (
+                    file_info.get("path_hash") if file_info.get("path_hash") else ""
+                )
+
+                read_marker = {
+                    "client_id": self.wallet.client_id,
+                    "client_public_key": self.wallet.public_key,
+                    "blobber_id": blobber["id"],
+                    "allocation_id": self.id,
+                    "owner_id": self.wallet.client_id,
+                    "timestamp": str(int(time())),
+                    "counter": str(counter),
+                    "signature": signature,
+                }
+
+                # Download the file
+                url = f"{blobber['url']}/v1/file/download/{self.id}"
+                data = MultipartEncoder(
+                    fields={
+                        "path_hash": path_hash,
+                        "block_num": "1",
+                        "num_blocks": str(num_blocks),
+                        "read_marker": json.dumps(read_marker),
+                    }
+                )
+                headers["Content-Type"] = data.content_type
+
+                res = requests.post(url, data=data, headers=headers)
+                results.append(res)
+
+        return results
 
     def _hash_file(self, filename):
         hashed_file = None
@@ -180,7 +227,7 @@ class Allocation(ConnectionBase):
         # for blobber in self.blobbers:
         data = MultipartEncoder(
             fields={
-                # "connection_id": connection_id,
+                "connection_id": connection_id,
                 "write_marker": json.dumps(
                     {
                         "allocation_root": new_allocation_root,

@@ -13,9 +13,6 @@ path = f"{get_home_path()}/.zcn/uploads/AMAZING.txt"
 info = main_alloc.get_allocation_info()
 # print(json.dumps(info, indent=4))
 
-results, read_markers = main_alloc.download_file("/TOPS.txt")
+results = main_alloc.download_file("/TOPS.txt")
 for res in results:
-    pprint(res)
-
-for marker in read_markers:
-    pprint(marker)
+    print(res.text)
