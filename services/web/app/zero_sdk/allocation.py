@@ -3,8 +3,8 @@ from time import time
 import requests
 import os
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from network import ConnectionBase
-from utils import hash_string, pprint
+from zero_sdk.network import ConnectionBase
+from zero_sdk.utils import hash_string
 from random import randint
 from reedsolo import RSCodec
 

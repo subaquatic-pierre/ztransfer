@@ -1,7 +1,7 @@
-from server.zero_sdk.utils import get_home_path
-from server.zero_sdk.wallet import Wallet
-from server.zero_sdk.allocation import Allocation
-from server.zero_sdk.const import MAIN_ALLOCATION_ID, STORAGE_ADDRESS
+from zero_sdk.utils import get_home_path
+from zero_sdk.wallet import Wallet
+from zero_sdk.allocation import Allocation
+from zero_sdk.const import MAIN_ALLOCATION_ID, STORAGE_ADDRESS
 
 wallet = Wallet()
 main_alloc = Allocation(MAIN_ALLOCATION_ID, wallet, STORAGE_ADDRESS)

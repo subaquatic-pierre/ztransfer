@@ -18,5 +18,5 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Media settings
-    STATIC_FOLDER = f"{os.getenv('APP_FOLDER')}/project/static"
-    MEDIA_FOLDER = f"{os.getenv('APP_FOLDER')}/project/media"
+    STATIC_FOLDER = f"{os.getenv('APP_FOLDER')}/app/static"
+    MEDIA_FOLDER = f"{os.getenv('APP_FOLDER')}/app/media"

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from server.zero_sdk.utils import (
+from zero_sdk.utils import (
     from_yaml,
     from_json,
     get_home_path,

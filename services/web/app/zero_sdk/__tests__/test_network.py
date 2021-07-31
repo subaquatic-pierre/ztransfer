@@ -1,6 +1,6 @@
-from server.zero_sdk.network import Network
-from server.zero_sdk.const import TO_CLIENT_ID, BASE_URL
-from server.zero_sdk.utils import from_json, from_yaml, get_home_path
+from zero_sdk.network import Network
+from zero_sdk.const import TO_CLIENT_ID, BASE_URL
+from zero_sdk.utils import from_json, from_yaml, get_home_path
 
 default_network_config = from_yaml(f"{get_home_path()}/.zcn/network_config.json")
 

@@ -1,4 +1,4 @@
-from server.zero_sdk.wallet import Wallet
+from zero_sdk.wallet import Wallet
 import pytest
 
 # Test error raise if no config pass to wallet

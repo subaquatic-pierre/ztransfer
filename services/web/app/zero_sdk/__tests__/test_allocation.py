@@ -1,7 +1,7 @@
-from server.zero_sdk.const import MAIN_ALLOCATION_ID
-from server.zero_sdk.allocation import Allocation
-from server.zero_sdk.wallet import Wallet
-from server.zero_sdk.network import Network
+from zero_sdk.const import MAIN_ALLOCATION_ID
+from zero_sdk.allocation import Allocation
+from zero_sdk.wallet import Wallet
+from zero_sdk.network import Network
 
 wallet = Wallet()
 main_alloc = Allocation(MAIN_ALLOCATION_ID, wallet)

@@ -1,5 +1,5 @@
 import json
-from server.zero_sdk.utils import network_url_from_config
+from zero_sdk.utils import network_url_from_config
 
 
 class ConnectionBase:
