@@ -17,5 +17,5 @@ docker-compose up -d --build
 #### Production:
 
 ```
-docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yaml up -d --build
 ```
