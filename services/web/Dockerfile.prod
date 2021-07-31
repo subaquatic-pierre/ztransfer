@@ -39,7 +39,6 @@ RUN mkdir -p /home/app
 
 # create the app user
 RUN addgroup --system app && adduser --system --group app
-RUN chown -R app /home/app
 
 # create the appropriate directories
 ENV HOME=/home/app

@@ -36,7 +36,7 @@ def upload_files():
         send_email(recipients, subject, html_message)
 
         for file in files:
-            file_path = os.path.join(current_app.root_path, "media", file.filename)
+            file_path = os.path.join(current_app.root_path, "upload", file.filename)
             file.save(file_path)
 
     return jsonify({"url": "https://www.somecoolurl.com"})
