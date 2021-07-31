@@ -1,0 +1,81 @@
+{% extends 'layout/layout.html' %}
+
+{% block main %}
+
+<main>
+    <div class='row main-row'>
+
+
+        <div class="col-12 col-md-4 d-flex flex-column justify-content-center align-items-center">
+
+            <div class="card border-0 upload-card rounded-4 shadow-lg mb-4">
+
+                <ul id="uploaded-file-list" class="list-group list-group-flush">
+                </ul>
+
+                <div id="card-body" class="card-body">
+                    <form action="" id="file-form">
+                        <div class="d-flex py-3">
+                            <div class="upload-icon text-primary">
+                                <div id="upload-file-button" class="hover">
+                                    <i class="fas fa-plus-circle fa-2x"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column mx-2">
+                                <h3 id="upload-file-text" class="card-title pricing-card-title hover my-0">Select File
+                                </h3>
+                                <input type="file" class="form-control" id="hidden-file-input" multiple hidden>
+                                <div class="invalid-feedback">
+                                    Please select file!
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <ul id="form-list" class="list-group list-group-flush">
+                    <li class="border-0 list-group-item">
+                        <input class="form-control form-control-sm " type="email" placeholder="To Email"
+                            id="from-email-input">
+                        <div class="invalid-feedback">
+                            Please provide valid email.
+                        </div>
+                    </li>
+                    <li class="list-group-item border-0">
+                        <input class="form-control form-control-sm" type="email" placeholder="From Email"
+                            id="to-email-input">
+                        <div class="invalid-feedback">
+                            Please provide valid email.
+                        </div>
+                    </li>
+                    </li>
+                    <li class="list-group-item border-0">
+                        <textarea class="form-control form-control-sm" type="text" multiline rows=3
+                            placeholder="Message" id="message-input"></textarea>
+                    </li>
+                    </li>
+                </ul>
+
+                <div class="card-footer py-3">
+                    <button type="button" class="w-100 btn btn-lg btn-primary" id='submit-transfer'>Transfer</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-8 d-flex align-items-center">
+            <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+                <h1 class="display-4 fw-normal">Z Transfer</h1>
+                <p class="fs-5 text-muted">Using the latest in blockchain technology Z-Transfer allows fast file
+                    sharing for free with all the benefits of blockchain security and privacy
+                </p>
+            </div>
+        </div>
+
+
+    </div>
+
+</main>
+
+
+{% endblock main %}

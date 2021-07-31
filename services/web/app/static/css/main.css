@@ -1,0 +1,108 @@
+body {
+  background-image: linear-gradient(180deg, #eee, #fff 100px, #fff);
+  min-height: 100vh;
+}
+
+a:hover {
+  cursor: pointer;
+}
+
+.form-control:focus {
+  border-color: #ffffff00;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 0, 0, 0);
+  outline: none;
+}
+
+.form-control {
+  outline: none;
+}
+
+.bd-placeholder-img {
+  font-size: 1.125rem;
+  text-anchor: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+    font-size: 3.5rem;
+  }
+}
+
+/* Toolbar Section */
+
+.network-status-div {
+  display: flex;
+  align-items: center;
+  margin: 0px 10px;
+}
+
+.icon-error {
+  color: red;
+}
+.icon-ok {
+  color: green;
+}
+
+/* ------ */
+
+/* Card Section */
+
+.progress-container {
+  padding: 3rem 0;
+}
+
+.completed-container {
+  padding: 3rem 0;
+}
+
+.hover:hover {
+  cursor: pointer;
+}
+
+.upload-card::-webkit-scrollbar {
+  display: none;
+}
+
+.upload-card {
+  max-height: 500px;
+  overflow-y: scroll;
+  width: 300px;
+}
+
+.remaining-space {
+  font-size: 0.8rem;
+}
+
+.file-info {
+  font-size: 0.8rem;
+  margin-top: -10px;
+}
+
+.file-list-item:hover > .file-delete-button {
+  display: block;
+}
+
+.file-delete-button {
+  transition: display 3s;
+}
+
+.file-delete-button {
+  display: none;
+}
+
+
+/* ------ */
+
+/* Main Page Section */
+
+.main-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  min-height: 78vh;
+}
+
+/* ------ */
