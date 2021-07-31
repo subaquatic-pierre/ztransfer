@@ -1,7 +1,0 @@
-requests
-reedsolo
-requests_toolbelt
-flask
-flask_mail
-flask_sqlalchemy
-python-dotenv
