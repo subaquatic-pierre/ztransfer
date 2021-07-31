@@ -1,6 +1,5 @@
 venv
 .env*
-uploads
 __pycache__
 wallet_data.py
 wallet_phrase.md
