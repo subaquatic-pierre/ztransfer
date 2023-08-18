@@ -4,3 +4,4 @@ __pycache__
 wallet_data.py
 wallet_phrase.md
 .vscode
+**/uploads
