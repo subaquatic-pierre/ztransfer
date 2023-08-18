@@ -1,23 +1,22 @@
-# pull official base image
-FROM python:3.9.5-slim-buster
+FROM python:3.11-bookworm
 
-# set work directory
-WORKDIR /usr/src/app
+WORKDIR /app
+RUN apt update && apt install -y nginx
+RUN pip3 install supervisor
 
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
 
-# install system dependencies
-RUN apt-get update && apt-get install -y netcat
+COPY conf/nginx.conf /etc/nginx/sites-available/
+RUN rm -rf /etc/nginx/sites-enabled/* 
+RUN ln -s /etc/nginx/sites-available/nginx.conf /etc/nginx/sites-enabled/nginx.conf 
 
-# install dependencies
-RUN pip install --upgrade pip
-COPY ./requirements.txt /usr/src/app/requirements.txt
-RUN pip install -r requirements.txt
+COPY conf/supervisord.conf /etc/supervisord.conf
+
+RUN python3 manage.py create_db
 
 # copy project
-COPY . /usr/src/app/
+COPY . .
 
-# run entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+EXPOSE 9000
+CMD ["/usr/local/bin/supervisord"]

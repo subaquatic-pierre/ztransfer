@@ -33,9 +33,10 @@ def upload_files():
         recipients = [to_email, from_email]
 
         files = request.files.getlist("files[]")
-        send_email(recipients, subject, html_message)
+        # send_email(recipients, subject, html_message)
 
         for file in files:
+            print(file)
             file_path = os.path.join(current_app.root_path, "uploads", file.filename)
             file.save(file_path)
 
